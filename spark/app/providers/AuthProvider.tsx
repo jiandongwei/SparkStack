@@ -35,7 +35,16 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     if (!fb) return;
     setLoading(true);
     try {
-      await signInWithPopup(fb.auth, fb.googleAuthProvider);
+      const result = await signInWithPopup(fb.auth, fb.googleAuthProvider);
+
+      // Exchange Firebase ID token for a secure server session cookie
+      const idToken = await result.user.getIdToken();
+      await fetch("/api/auth/firebase-login", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
     } finally {
       setLoading(false);
     }
@@ -45,6 +54,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     if (!fb) return;
     setLoading(true);
     try {
+      // Clear server session cookie
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
       await firebaseSignOut(fb.auth);
     } finally {
       setLoading(false);
