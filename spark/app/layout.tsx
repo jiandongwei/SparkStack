@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 import AuthProvider from "./providers/AuthProvider";
+import UserNav from "./components/UserNav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,23 +27,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <header className="w-full border-b border-gray-200 dark:border-zinc-800">
-          <div className="mx-auto max-w-3xl px-6 py-4 flex items-center justify-between">
-            <div className="text-sm font-semibold">Spark</div>
-            <nav className="flex gap-4">
-              <Link href="/" className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Home
-              </Link>
-              <Link href="/about" className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                About
-              </Link>
-            </nav>
-          </div>
-        </header>
-        <AuthProvider>{children}</AuthProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <AuthProvider>
+          <header className="w-full border-b border-gray-200 dark:border-zinc-800">
+            <div className="mx-auto max-w-3xl px-6 py-4 flex items-center justify-between">
+              <div className="text-sm font-semibold">Spark</div>
+              <nav className="flex gap-4 items-center">
+                <Link href="/" className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  Home
+                </Link>
+                <Link href="/about" className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  About
+                </Link>
+                <UserNav />
+              </nav>
+            </div>
+          </header>
+
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

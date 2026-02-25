@@ -3,14 +3,16 @@ import { cookies, headers } from "next/headers";
 export function setSession(userId: string) {
   const ck = cookies();
   if (typeof (ck as any).set === "function") {
-    (ck as any).set("session", userId, {
+    const opts: any = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      domain: ".sparkstack.me",
       maxAge: 60 * 60 * 24 * 7, // 1 week
-    });
+    };
+    if (process.env.COOKIE_DOMAIN) opts.domain = process.env.COOKIE_DOMAIN;
+
+    (ck as any).set("session", userId, opts);
   }
   // If `cookies().set` isn't available in this runtime (e.g. certain server contexts),
   // setting cookies should be done from a route handler where you have access to the
@@ -20,7 +22,9 @@ export function setSession(userId: string) {
 export function clearSession() {
   const ck = cookies();
   if (typeof (ck as any).delete === "function") {
-    (ck as any).delete("session");
+    const opts: any = { path: "/" };
+    if (process.env.COOKIE_DOMAIN) opts.domain = process.env.COOKIE_DOMAIN;
+    (ck as any).delete("session", opts);
   }
 }
 

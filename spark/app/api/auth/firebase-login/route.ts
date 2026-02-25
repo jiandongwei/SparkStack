@@ -15,13 +15,16 @@ export async function POST(req: Request) {
     const sessionCookie = await auth.createSessionCookie(idToken, { expiresIn });
 
     const res = NextResponse.json({ ok: true });
-    res.cookies.set("session", sessionCookie, {
+    const cookieOpts: any = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
       maxAge: expiresIn / 1000,
-    });
+    };
+    if (process.env.COOKIE_DOMAIN) cookieOpts.domain = process.env.COOKIE_DOMAIN;
+
+    res.cookies.set("session", sessionCookie, cookieOpts);
 
     return res;
   } catch (err: any) {
