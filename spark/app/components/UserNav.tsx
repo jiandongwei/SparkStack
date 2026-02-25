@@ -22,9 +22,14 @@ export default function UserNav() {
   return (
     <div>
       {user ? (
-        <button onClick={handleLogout} className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-          Logout
-        </button>
+        <div className="flex items-center gap-3">
+          <a href="/settings" className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            Settings
+          </a>
+          <button onClick={handleLogout} className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            Logout
+          </button>
+        </div>
       ) : (
         <Link href="/login" className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
           Login
