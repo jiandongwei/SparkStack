@@ -1,42 +1,31 @@
-"use client";
-
 import React from "react";
-import { useAuth } from "../providers/AuthProvider";
+import { loginAction } from "./actions";
+import GoogleSignInButton from "./GoogleSignInButton";
 
 export default function LoginPage() {
-  const { user, loading, signInWithGoogle, signOut } = useAuth();
-
   return (
     <div className="max-w-xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Login</h1>
 
-      {loading && (
-        <p className="text-gray-600">Loading...</p>
-      )}
-
-      {!loading && user && (
-        <div className="space-y-4">
-          <p className="text-lg">Signed in as <strong>{user.email}</strong></p>
-
-          <button
-            onClick={signOut}
-            className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition"
-          >
-            Sign out
-          </button>
-        </div>
-      )}
-
-      {!loading && !user && (
+      <form action="/api/auth/login" method="post" className="space-y-4">
         <div>
-          <button
-            onClick={signInWithGoogle}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500 transition"
-          >
-            Sign in with Google
-          </button>
+          <label className="block text-sm font-medium mb-1">Email</label>
+          <input name="email" type="email" required className="w-full border rounded px-3 py-2" />
         </div>
-      )}
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Password</label>
+          <input name="password" type="password" required className="w-full border rounded px-3 py-2" />
+        </div>
+
+        <div>
+          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">Log in</button>
+        </div>
+      </form>
+
+      <div className="mt-4">
+        <GoogleSignInButton />
+      </div>
     </div>
   );
 }

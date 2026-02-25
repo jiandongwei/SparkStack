@@ -1,65 +1,128 @@
-import Image from "next/image";
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Container,
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  CssBaseline,
+  Stack,
+} from "@mui/material";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <>
+      <CssBaseline />
+      <AppBar position="static" color="transparent" elevation={0}>
+        <Toolbar sx={{ justifyContent: "space-between" }}>
+          <Typography variant="h6" component="div" sx={{ fontWeight: 700 }}>
+            SparkStack
+          </Typography>
+          <Stack direction="row" spacing={1}>
+            <Button component={Link} href="/about" variant="outlined" size="small">
+              About
+            </Button>
+            <Button component={Link} href="/login" variant="contained" size="small">
+              Sign in
+            </Button>
+          </Stack>
+        </Toolbar>
+      </AppBar>
+
+      <Box component="main" sx={{ py: 8 }}>
+        <Container maxWidth="lg">
+          <Grid container spacing={6} alignItems="center">
+            <Grid item component="div" xs={12} md={6}>
+              <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 800 }}>
+                Fullstack starter for Next.js + Firebase
+              </Typography>
+              <Typography variant="h6" color="text.secondary" paragraph>
+                SparkStack bundles Next.js, Firebase Functions, and Hosting into a
+                developer-friendly starter. Get a secure authentication flow,
+                serverless functions, and zero-configuration hosting to launch
+                prototypes quickly.
+              </Typography>
+
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 3 }}>
+                <Button component={Link} href="/login" variant="contained" size="large">
+                  Get Started
+                </Button>
+                <Button component={Link} href="/about" variant="outlined" size="large">
+                  Learn More
+                </Button>
+              </Stack>
+            </Grid>
+
+            <Grid item component="div" xs={12} md={6}>
+              <Card elevation={3} sx={{ borderRadius: 3 }}>
+                <CardContent>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }} gutterBottom>
+                    What’s included
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item component="div" xs={12} sm={6}>
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                        Authentication
+                      </Typography>
+                      <Typography color="text.secondary">Email/password and provider auth</Typography>
+                    </Grid>
+                    <Grid item component="div" xs={12} sm={6}>
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                        Serverless
+                      </Typography>
+                      <Typography color="text.secondary">Cloud Functions for backend logic</Typography>
+                    </Grid>
+                    <Grid item component="div" xs={12} sm={6}>
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                        Hosting
+                      </Typography>
+                      <Typography color="text.secondary">Static + dynamic hosting via Firebase</Typography>
+                    </Grid>
+                    <Grid item component="div" xs={12} sm={6}>
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                        Developer Experience
+                      </Typography>
+                      <Typography color="text.secondary">Next.js App Router, Tailwind utilities, and examples</Typography>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+
+          <Box sx={{ mt: 8 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+              Quick start
+            </Typography>
+            <Typography color="text.secondary" paragraph>
+              Clone the repo, install dependencies and run the dev server. Follow the
+              provided `functions` and `hosting` folders to deploy with Firebase.
+            </Typography>
+          </Box>
+        </Container>
+      </Box>
+
+      <Box component="footer" sx={{ py: 4, borderTop: "1px solid", borderColor: "divider" }}>
+        <Container maxWidth="lg">
+          <Grid container justifyContent="space-between" alignItems="center">
+            <Grid item component="div">
+              <Typography variant="body2">© {new Date().getFullYear()} SparkStack</Typography>
+            </Grid>
+            <Grid item component="div">
+              <Stack direction="row" spacing={2}>
+                <Button size="small" component={Link} href="https://github.com/">Source</Button>
+              </Stack>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+    </>
   );
 }
