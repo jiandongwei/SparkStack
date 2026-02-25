@@ -105,20 +105,24 @@ export default function SettingsPage() {
         <h2 className="text-lg font-medium mb-2">Connected accounts</h2>
         <div className="space-y-2">
           {providerIds.length === 0 && <div>No linked providers.</div>}
-          {providerIds.map((pid) => (
-            <div key={pid} className="flex items-center justify-between border rounded p-3">
-              <div>{providerName(pid)}</div>
-              <div>
-                <button
-                  onClick={() => handleUnlink(pid)}
-                  disabled={busy}
-                  className="px-3 py-1 text-sm bg-red-600 text-white rounded"
-                >
-                  Unlink
-                </button>
+          {providerIds.map((pid) => {
+            const onlyOne = providerIds.length === 1;
+            return (
+              <div key={pid} className="flex items-center justify-between border rounded p-3">
+                <div>{providerName(pid)}</div>
+                <div>
+                  <button
+                    onClick={() => handleUnlink(pid)}
+                    disabled={busy || onlyOne}
+                    title={onlyOne ? "Cannot unlink the only connected account" : "Unlink this provider"}
+                    className={`px-3 py-1 text-sm rounded ${busy || onlyOne ? "bg-zinc-300 text-zinc-600" : "bg-red-600 text-white"}`}
+                  >
+                    Unlink
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
