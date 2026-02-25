@@ -1,0 +1,11 @@
+# Ignore nothing by default
+# (override the auto-generated gcloudignore)
+
+# Allow env files
+!.env.production
+!.env.local
+
+# Ignore only what we truly want to skip
+node_modules
+.next
+.git

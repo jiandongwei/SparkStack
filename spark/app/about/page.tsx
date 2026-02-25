@@ -1,12 +1,20 @@
-export default function About() {
+"use client";
+
+export default function DebugPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
-      <main className="max-w-3xl p-8">
-        <h1 className="text-3xl font-semibold text-black dark:text-zinc-50">About</h1>
-        <p className="mt-4 text-lg text-zinc-600 dark:text-zinc-400">
-          This is the About page for the Spark app.
-        </p>
-      </main>
-    </div>
+    <pre>
+      {JSON.stringify(
+        {
+          apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+          authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+          storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+          messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+          appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+        },
+        null,
+        2
+      )}
+    </pre>
   );
 }
