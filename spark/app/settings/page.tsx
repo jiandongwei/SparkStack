@@ -162,7 +162,7 @@ export default function SettingsPage() {
               type="password"
               required
               fullWidth
-              minLength={6}
+              inputProps={{ minLength: 6 }}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               sx={{ mb: 2 }}
@@ -173,7 +173,7 @@ export default function SettingsPage() {
               type="password"
               required
               fullWidth
-              minLength={6}
+              inputProps={{ minLength: 6 }}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               sx={{ mb: 2 }}
