@@ -3,8 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import {
-  AppBar,
-  Toolbar,
   Typography,
   Button,
   Container,
@@ -12,31 +10,15 @@ import {
   Grid,
   Card,
   CardContent,
-  CssBaseline,
   Stack,
 } from "@mui/material";
 
 export default function Home() {
   return (
     <>
-      <CssBaseline />
-      <AppBar position="static" color="transparent" elevation={0}>
-        <Toolbar sx={{ justifyContent: "space-between" }}>
-          <Typography variant="h6" component="div" sx={{ fontWeight: 700 }}>
-            SparkStack
-          </Typography>
-          <Stack direction="row" spacing={1}>
-            <Button component={Link} href="/about" variant="outlined" size="small">
-              About
-            </Button>
-            <Button component={Link} href="/login" variant="contained" size="small">
-              Sign in
-            </Button>
-          </Stack>
-        </Toolbar>
-      </AppBar>
+      {/* Navbar provided by layout's ClientMuiNavbar; removed duplicate AppBar here */}
 
-      <Box component="main" sx={{ py: 8 }}>
+      <Box component="main" sx={{ py:2}}>
         <Container maxWidth="lg">
           <Grid container spacing={6} alignItems="center">
             <Grid item component="div" xs={12} md={6}>
@@ -106,21 +88,6 @@ export default function Home() {
               provided `functions` and `hosting` folders to deploy with Firebase.
             </Typography>
           </Box>
-        </Container>
-      </Box>
-
-      <Box component="footer" sx={{ py: 4, borderTop: "1px solid", borderColor: "divider" }}>
-        <Container maxWidth="lg">
-          <Grid container justifyContent="space-between" alignItems="center">
-            <Grid item component="div">
-              <Typography variant="body2">© {new Date().getFullYear()} SparkStack</Typography>
-            </Grid>
-            <Grid item component="div">
-              <Stack direction="row" spacing={2}>
-                <Button size="small" component={Link} href="https://github.com/">Source</Button>
-              </Stack>
-            </Grid>
-          </Grid>
         </Container>
       </Box>
     </>

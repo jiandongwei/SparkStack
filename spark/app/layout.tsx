@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import ClientMuiNavbar from "./components/ClientMuiNavbar";
+import ClientToolbarSpacer from "./components/ClientToolbarSpacer";
 import ClientFooter from "./components/ClientFooter";
 import ClientMuiProvider from "./components/ClientMuiProvider";
 import "./globals.css";
@@ -35,8 +36,9 @@ export default function RootLayout({
         <AuthProvider>
           <ClientMuiProvider>
             <ClientMuiNavbar />
+            <ClientToolbarSpacer />
 
-            {children}
+            <main style={{ flex: 1 }}>{children}</main>
 
             <ClientFooter />
           </ClientMuiProvider>
