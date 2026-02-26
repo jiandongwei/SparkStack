@@ -3,75 +3,86 @@
 import React from "react";
 import Link from "next/link";
 import {
+  Box,
+  Container,
   Typography,
   Button,
-  Container,
-  Box,
   Grid,
   Card,
   CardContent,
   Stack,
+  Chip,
 } from "@mui/material";
 
 export default function Home() {
   return (
-    <>
-      {/* Navbar provided by layout's ClientMuiNavbar; removed duplicate AppBar here */}
-
-      <Box component="main" sx={{ py:2}}>
+    <Box component="main" sx={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <Box sx={{ py: { xs: 6, md: 12 }, background: "linear-gradient(180deg,#fff,#f7f7f8)" }}>
         <Container maxWidth="lg">
           <Grid container spacing={6} alignItems="center">
-            <Grid item component="div" xs={12} md={6}>
+            <Grid item xs={12} md={6}>
               <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 800 }}>
-                Fullstack starter for Next.js + Firebase
+                SparkStack — Next.js on Google Cloud Run
               </Typography>
+
               <Typography variant="h6" color="text.secondary" paragraph>
-                SparkStack bundles Next.js, Firebase Functions, and Hosting into a
-                developer-friendly starter. Get a secure authentication flow,
-                serverless functions, and zero-configuration hosting to launch
-                prototypes quickly.
+                A modern, containerized architecture for private, high-performance AI workflows.
+                SparkStack runs your Next.js app as a lightweight container on Google Cloud Run —
+                giving you instant SSR, predictable scaling, and full control over runtime
+                environment and dependencies.
               </Typography>
 
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 3 }}>
                 <Button component={Link} href="/login" variant="contained" size="large">
-                  Get Started
+                  Get started
                 </Button>
                 <Button component={Link} href="/about" variant="outlined" size="large">
-                  Learn More
+                  Learn how it works
                 </Button>
+              </Stack>
+
+              <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
+                <Chip label="Cloud Run" color="primary" />
+                <Chip label="Instant SSR" />
+                <Chip label="Private by default" />
+                <Chip label="Scalable" />
               </Stack>
             </Grid>
 
-            <Grid item component="div" xs={12} md={6}>
-              <Card elevation={3} sx={{ borderRadius: 3 }}>
+            <Grid item xs={12} md={6}>
+              <Card elevation={2} sx={{ borderRadius: 3 }}>
                 <CardContent>
                   <Typography variant="subtitle1" sx={{ fontWeight: 700 }} gutterBottom>
-                    What’s included
+                    Modern deployment stack
                   </Typography>
+
                   <Grid container spacing={2}>
-                    <Grid item component="div" xs={12} sm={6}>
-                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                        Authentication
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                        Containerized
                       </Typography>
-                      <Typography color="text.secondary">Email/password and provider auth</Typography>
+                      <Typography color="text.secondary">Built as a standalone Node container for Cloud Run.</Typography>
                     </Grid>
-                    <Grid item component="div" xs={12} sm={6}>
-                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                        Serverless
+
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                        Secure Auth
                       </Typography>
-                      <Typography color="text.secondary">Cloud Functions for backend logic</Typography>
+                      <Typography color="text.secondary">Firebase Authentication for user identity and sessions.</Typography>
                     </Grid>
-                    <Grid item component="div" xs={12} sm={6}>
-                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                        Hosting
+
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                        Fast SSR
                       </Typography>
-                      <Typography color="text.secondary">Static + dynamic hosting via Firebase</Typography>
+                      <Typography color="text.secondary">Server-side rendering with minimal client overhead.</Typography>
                     </Grid>
-                    <Grid item component="div" xs={12} sm={6}>
-                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                        Developer Experience
+
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                        Scalable
                       </Typography>
-                      <Typography color="text.secondary">Next.js App Router, Tailwind utilities, and examples</Typography>
+                      <Typography color="text.secondary">Automatic, per-request scaling on Cloud Run.</Typography>
                     </Grid>
                   </Grid>
                 </CardContent>
@@ -81,15 +92,21 @@ export default function Home() {
 
           <Box sx={{ mt: 8 }}>
             <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-              Quick start
+              How it fits together
             </Typography>
             <Typography color="text.secondary" paragraph>
-              Clone the repo, install dependencies and run the dev server. Follow the
-              provided `functions` and `hosting` folders to deploy with Firebase.
+              SparkStack compiles Next.js into a production-ready standalone app, packages it into a container,
+              and deploys it to Google Cloud Run. Optionally, Firebase Hosting can act as a proxy or provide
+              static hosting. This gives you the best of both worlds: a modern SSR experience with the
+              operational simplicity of serverless containers.
+            </Typography>
+
+            <Typography variant="body2" sx={{ fontFamily: "monospace", background: "#f2f3f5", p: 1, borderRadius: 1, display: "inline-block" }}>
+              gcloud builds submit --tag gcr.io/&lt;PROJECT&gt;/sparkstack && gcloud run deploy sparkstack
             </Typography>
           </Box>
         </Container>
       </Box>
-    </>
+    </Box>
   );
 }

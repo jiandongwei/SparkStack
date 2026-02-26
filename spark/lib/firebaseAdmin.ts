@@ -1,7 +1,5 @@
 import admin from "firebase-admin";
 
-let app: admin.app.App | null = null;
-
 function getServiceAccount() {
   const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
@@ -16,13 +14,13 @@ function getServiceAccount() {
     privateKey: privateKey.replace(/\\n/g, "\n"),
   };
 }
-
 export function getAdmin() {
-  if (app) return admin;
+  // If an admin app already exists in this process, reuse it.
+  if (admin.apps && admin.apps.length) return admin;
 
   const serviceAccount = getServiceAccount();
   if (serviceAccount) {
-    app = admin.initializeApp({
+    admin.initializeApp({
       credential: admin.credential.cert(serviceAccount as any),
     });
     return admin;
@@ -30,7 +28,7 @@ export function getAdmin() {
 
   // Fallback: try default credentials (e.g., when GOOGLE_APPLICATION_CREDENTIALS is set)
   try {
-    app = admin.initializeApp();
+    admin.initializeApp();
     return admin;
   } catch (err) {
     console.warn("firebase-admin not initialized: missing credentials", err);
