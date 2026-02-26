@@ -4,8 +4,9 @@ import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../providers/AuthProvider";
+import Button from "@mui/material/Button";
 
-export default function UserNav() {
+export default function UserNav({ color, buttonSx }: { color?: string; buttonSx?: any }) {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
 
@@ -19,22 +20,33 @@ export default function UserNav() {
 
   if (loading) return null;
 
+  const baseSx = {
+    color: color || "inherit",
+    textTransform: "none",
+    fontWeight: 600,
+    fontSize: "0.95rem",
+    px: 1.5,
+    borderRadius: 1,
+    ...buttonSx,
+  };
+
   return (
     <div>
       {user ? (
         <div className="flex items-center gap-3">
-          <a href="/settings" className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+          <Button component={Link} href="/settings" variant="text" sx={baseSx}>
             Settings
-          </a>
-          <button onClick={handleLogout} className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+          </Button>
+          <Button onClick={handleLogout} variant="text" sx={baseSx}>
             Logout
-          </button>
+          </Button>
         </div>
       ) : (
-        <Link href="/login" className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+        <Button component={Link} href="/login" variant="text" sx={baseSx}>
           Login
-        </Link>
+        </Button>
       )}
     </div>
   );
 }
+
