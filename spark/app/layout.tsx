@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import ClientMuiNavbar from "./components/ClientMuiNavbar";
+import ClientFooter from "./components/ClientFooter";
+import ClientMuiProvider from "./components/ClientMuiProvider";
 import "./globals.css";
 import AuthProvider from "./providers/AuthProvider";
 
@@ -26,11 +28,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+      >
         <AuthProvider>
-          <ClientMuiNavbar />
+          <ClientMuiProvider>
+            <ClientMuiNavbar />
 
-          {children}
+            {children}
+
+            <ClientFooter />
+          </ClientMuiProvider>
         </AuthProvider>
       </body>
     </html>
