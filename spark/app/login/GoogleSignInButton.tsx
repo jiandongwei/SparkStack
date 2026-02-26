@@ -3,6 +3,7 @@
 import React from "react";
 import { loadFirebase } from "@/lib/firebaseClient";
 import { signInWithPopup } from "firebase/auth";
+import { Button, CircularProgress } from "@mui/material";
 
 export default function GoogleSignInButton() {
   const [loading, setLoading] = React.useState(false);
@@ -14,12 +15,18 @@ export default function GoogleSignInButton() {
       const result = await signInWithPopup(auth, googleAuthProvider);
       const idToken = await result.user.getIdToken();
 
-      await fetch("/api/auth/firebase-login", {
+      const res = await fetch("/api/auth/firebase-login", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken }),
       });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        console.error("Server returned error", json);
+        alert(json?.error ?? `Server error: ${res.status}`);
+        return;
+      }
 
       window.location.href = "/dashboard";
     } catch (err) {
@@ -31,12 +38,15 @@ export default function GoogleSignInButton() {
   };
 
   return (
-    <button
+    <Button
       onClick={handleClick}
       disabled={loading}
-      className="px-4 py-2 bg-red-600 text-white rounded"
+      variant="contained"
+      size="medium"
+      disableElevation
+      sx={{ backgroundColor: "#DB4437", color: "#fff", '&:hover': { backgroundColor: '#c33a2f' }, minWidth: 220 }}
     >
-      {loading ? "Signing in..." : "Sign in with Google"}
-    </button>
+      {loading ? <CircularProgress size={20} color="inherit" /> : "Sign in with Google"}
+    </Button>
   );
 }

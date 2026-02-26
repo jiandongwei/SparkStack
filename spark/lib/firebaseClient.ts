@@ -15,6 +15,12 @@ export async function loadFirebase() {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
   };
 
+  // Sanity check: ensure public env vars are present in the client runtime.
+  const missing = Object.entries(firebaseConfig).filter(([, v]) => !v).map(([k]) => k);
+  if (missing.length) {
+    throw new Error(`Missing Firebase client env vars: ${missing.join(", ")}`);
+  }
+
   const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
   const auth = getAuth(app);
   const googleAuthProvider = new GoogleAuthProvider();

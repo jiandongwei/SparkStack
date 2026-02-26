@@ -4,94 +4,106 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { loadFirebase } from "@/lib/firebaseClient";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { Box, TextField, Button, Stack, CircularProgress, Alert } from "@mui/material";
 
 export default function EmailLoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setLoading(true);
     try {
       const { auth } = await loadFirebase();
-      console.debug("Firebase app options:", (auth as any).app?.options ?? null);
       const cred = await signInWithEmailAndPassword(auth, email, password);
       const idToken = await cred.user.getIdToken();
-      await fetch("/api/auth/firebase-login", {
+      const res = await fetch("/api/auth/firebase-login", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken }),
       });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(json?.error ?? `Server error: ${res.status}`);
+        return;
+      }
       router.push("/dashboard");
     } catch (err: any) {
       console.error("Email sign-in failed", err);
-      const code = err?.code ?? err?.status ?? null;
       const message = err?.message ?? String(err);
-      alert(code ? `${code}: ${message}` : message);
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
   const register = async () => {
+    setError(null);
     setLoading(true);
     try {
       const { auth } = await loadFirebase();
-      console.debug("Firebase app options:", (auth as any).app?.options ?? null);
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
       const idToken = await userCred.user.getIdToken();
-      await fetch("/api/auth/firebase-login", {
+      const res = await fetch("/api/auth/firebase-login", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken }),
       });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(json?.error ?? `Server error: ${res.status}`);
+        return;
+      }
       router.push("/dashboard");
     } catch (err: any) {
       console.error("Registration failed", err);
-      const code = err?.code ?? err?.status ?? null;
       const message = err?.message ?? String(err);
-      alert(code ? `${code}: ${message}` : message);
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={signIn} className="space-y-3">
-      <div>
-        <label className="block text-sm font-medium mb-1">Email</label>
-        <input
+    <Box component="form" onSubmit={signIn} noValidate>
+      <Stack spacing={2}>
+        {error && <Alert severity="error">{error}</Alert>}
+
+        <TextField
+          label="Email"
+          type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          type="email"
           required
-          className="w-full border rounded px-3 py-2"
+          fullWidth
+          size="medium"
         />
-      </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-1">Password</label>
-        <input
+        <TextField
+          label="Password"
+          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          type="password"
           required
-          className="w-full border rounded px-3 py-2"
+          fullWidth
+          size="medium"
         />
-      </div>
 
-      <div className="flex gap-3">
-        <button type="submit" disabled={loading} className="px-4 py-2 bg-blue-600 text-white rounded">
-          {loading ? "Signing in..." : "Sign in"}
-        </button>
-        <button type="button" disabled={loading} onClick={register} className="px-4 py-2 bg-gray-600 text-white rounded">
-          {loading ? "..." : "Register"}
-        </button>
-      </div>
-    </form>
+        <Stack direction="row" spacing={2}>
+          <Button type="submit" variant="contained" disabled={loading} size="medium" sx={{ minWidth: 120 }}>
+            {loading ? <CircularProgress size={20} color="inherit" /> : "Sign in"}
+          </Button>
+          <Button type="button" variant="outlined" disabled={loading} onClick={register} size="medium">
+            {loading ? <CircularProgress size={20} /> : "Register"}
+          </Button>
+        </Stack>
+      </Stack>
+    </Box>
   );
 }
