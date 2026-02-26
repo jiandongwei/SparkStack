@@ -94,7 +94,7 @@ export default function MuiNavbar() {
             <Button color="inherit" href="#">Docs</Button>
             <Button color="inherit" href="#">Pricing</Button>
             {!loading && !user && (
-              <Button color="inherit" href="/signin">Sign In</Button>
+              <Button color="inherit" href="/login">Sign In</Button>
             )}
             {user && (
               <Button
@@ -157,15 +157,15 @@ export default function MuiNavbar() {
               <List>
                 {!loading && !user ? (
                   <ListItem disablePadding>
-                    <ListItemButton onClick={() => { handleMobileMenuClose(); router.push('/signin'); }}>
+                    <ListItemButton onClick={() => { handleMobileMenuClose(); router.push('/login'); }}>
                       <ListItemText primary="Sign In" />
                     </ListItemButton>
                   </ListItem>
                 ) : (
                   <>
                     <ListItem disablePadding>
-                      <ListItemButton onClick={() => { handleMobileMenuClose(); router.push('/profile'); }}>
-                        <ListItemText primary="Profile" />
+                      <ListItemButton onClick={() => { handleMobileMenuClose(); router.push('/settings'); }}>
+                        <ListItemText primary="Settings" />
                       </ListItemButton>
                     </ListItem>
                     <ListItem disablePadding>
@@ -192,10 +192,10 @@ export default function MuiNavbar() {
             <MenuItem
               onClick={() => {
                 handleAccountMenuClose();
-                router.push('/profile');
+                router.push('/settings');
               }}
             >
-              Profile
+              Settings
             </MenuItem>
             <MenuItem onClick={handleSignOut}>Sign Out</MenuItem>
           </Menu>

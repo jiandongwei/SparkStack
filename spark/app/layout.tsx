@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import MuiNavbar from "./components/MuiNavbar";
+import ClientMuiNavbar from "./components/ClientMuiNavbar";
 import "./globals.css";
 import AuthProvider from "./providers/AuthProvider";
 
@@ -28,7 +28,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AuthProvider>
-          <MuiNavbar />
+          <ClientMuiNavbar />
 
           {children}
         </AuthProvider>
