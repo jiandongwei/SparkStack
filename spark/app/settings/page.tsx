@@ -10,6 +10,15 @@ import {
   EmailAuthProvider,
 } from "firebase/auth";
 
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Stack from "@mui/material/Stack";
+import Alert from "@mui/material/Alert";
+
 function providerName(id: string) {
   if (id === "password") return "Email/Password";
   if (id === "google.com") return "Google";
@@ -23,8 +32,8 @@ export default function SettingsPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  if (loading) return <div>Loading...</div>;
-  if (!user) return <div>Please sign in to view settings.</div>;
+  if (loading) return <Container sx={{ py: 6 }}>Loading...</Container>;
+  if (!user) return <Container sx={{ py: 6 }}>Please sign in to view settings.</Container>;
 
   const providerIds = user.providerData.map((p) => p.providerId);
 
@@ -33,10 +42,8 @@ export default function SettingsPage() {
     setBusy(true);
     try {
       const { auth, googleAuthProvider } = await loadFirebase();
-      // Link Google provider to currently signed-in user
       await linkWithPopup(user as any, googleAuthProvider);
       setMsg("Google account linked successfully. Refreshing...");
-      // allow AuthProvider to pick up new state
       setTimeout(() => window.location.reload(), 600);
     } catch (err: any) {
       console.error("Linking failed", err);
@@ -52,7 +59,6 @@ export default function SettingsPage() {
       setBusy(false);
     }
   };
-
 
   const handleLinkEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,88 +104,93 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto py-8">
-      <h1 className="text-2xl font-semibold mb-4">Settings</h1>
+    <Container sx={{ py: 8, flexGrow: 1 }} maxWidth="md">
+      <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
+        Settings
+      </Typography>
 
-      <section className="mb-6">
-        <h2 className="text-lg font-medium mb-2">Connected accounts</h2>
-        <div className="space-y-2">
-          {providerIds.length === 0 && <div>No linked providers.</div>}
+      <Paper sx={{ p: 3, mb: 3 }} elevation={1}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Connected accounts
+        </Typography>
+
+        <Stack spacing={2}>
+          {providerIds.length === 0 && <Typography>No linked providers.</Typography>}
           {providerIds.map((pid) => {
             const onlyOne = providerIds.length === 1;
             return (
-              <div key={pid} className="flex items-center justify-between border rounded p-3">
-                <div>{providerName(pid)}</div>
-                <div>
-                  <button
-                    onClick={() => handleUnlink(pid)}
-                    disabled={busy || onlyOne}
-                    title={onlyOne ? "Cannot unlink the only connected account" : "Unlink this provider"}
-                    className={`px-3 py-1 text-sm rounded ${busy || onlyOne ? "bg-zinc-300 text-zinc-600" : "bg-red-600 text-white"}`}
-                  >
-                    Unlink
-                  </button>
-                </div>
-              </div>
+              <Box key={pid} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: 1, border: '1px solid rgba(0,0,0,0.08)', p: 2 }}>
+                <Typography>{providerName(pid)}</Typography>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => handleUnlink(pid)}
+                  disabled={busy || onlyOne}
+                >
+                  Unlink
+                </Button>
+              </Box>
             );
           })}
-        </div>
-      </section>
+        </Stack>
+      </Paper>
 
-      <section className="mb-6">
-        <h2 className="text-lg font-medium mb-2">Link providers</h2>
-        <div className="flex gap-3">
+      <Paper sx={{ p: 3, mb: 3 }} elevation={1}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Link providers
+        </Typography>
+        <Box>
           {!providerIds.includes("google.com") && (
-            <button onClick={handleLinkGoogle} disabled={busy} className="px-4 py-2 bg-blue-600 text-white rounded">
+            <Button variant="contained" disabled={busy} onClick={handleLinkGoogle} sx={{ backgroundColor: '#1976d2' }}>
               {busy ? "Working..." : "Link Google"}
-            </button>
+            </Button>
           )}
-        </div>
-      </section>
+        </Box>
+      </Paper>
 
       {!providerIds.includes("password") && (
-        <section className="mb-6">
-          <h2 className="text-lg font-medium mb-2">Link email/password</h2>
-          <form onSubmit={handleLinkEmail} className="space-y-3 max-w-md">
-            <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
-              <div className="w-full border rounded px-3 py-2 bg-zinc-50">{user.email}</div>
-            </div>
+        <Paper sx={{ p: 3, mb: 3 }} elevation={1}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Link email/password
+          </Typography>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Password</label>
-              <input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                type="password"
-                required
-                minLength={6}
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
+          <Box component="form" onSubmit={handleLinkEmail} sx={{ maxWidth: 480 }}>
+            <Typography variant="body2" sx={{ mb: 1 }}>{user.email}</Typography>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Confirm password</label>
-              <input
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                type="password"
-                required
-                minLength={6}
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
+            <TextField
+              label="Password"
+              type="password"
+              required
+              fullWidth
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              sx={{ mb: 2 }}
+            />
 
-            <div>
-              <button type="submit" disabled={busy} className="px-4 py-2 bg-green-600 text-white rounded">
-                {busy ? "Working..." : "Link Email/Password"}
-              </button>
-            </div>
-          </form>
-        </section>
+            <TextField
+              label="Confirm password"
+              type="password"
+              required
+              fullWidth
+              minLength={6}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              sx={{ mb: 2 }}
+            />
+
+            <Button type="submit" variant="contained" color="success" disabled={busy}>
+              {busy ? "Working..." : "Link Email/Password"}
+            </Button>
+          </Box>
+        </Paper>
       )}
 
-      {msg && <div className="mt-4 p-3 bg-zinc-100 rounded">{msg}</div>}
-    </div>
+      {msg && (
+        <Alert severity="info" sx={{ mt: 2 }}>
+          {msg}
+        </Alert>
+      )}
+    </Container>
   );
 }
