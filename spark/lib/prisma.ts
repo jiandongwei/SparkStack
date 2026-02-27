@@ -15,23 +15,7 @@ function createClient() {
   // surrounding single/double quotes if present.
   const rawPool = process.env.DATABASE_URL_POOL ?? process.env.DATABASE_URL ?? "";
   const poolUrl = rawPool.trim().replace(/^['"]|['"]$/g, "");
-  // Diagnostic: log which DB env is present (do not print the full URL)
-  try {
-    const present = !!poolUrl;
-    const looksLikeNeon = present && poolUrl.includes("neon.tech");
-    const dbSummary = (u: string) => {
-      if (!u) return "<missing>";
-      try {
-        const m = u.match(/@([^:/?]+)/);
-        return m ? m[1] : "<redacted>";
-      } catch {
-        return "<redacted>";
-      }
-    };
-    console.log("[prisma] poolUrl present:", present, "looksLikeNeon:", looksLikeNeon, "dbHost:", dbSummary(poolUrl));
-  } catch (e) {
-    console.error("[prisma] diagnostic error", e);
-  }
+  // (Diagnostics removed)
 
   // If the URL looks like Neon, attempt to wire the Neon adapter using the
   // serverless pool. This avoids depending on `pg` and matches Prisma 7+
@@ -46,9 +30,7 @@ function createClient() {
       const { Pool } = require("@neondatabase/serverless");
 
         const pool = new Pool({ connectionString: poolUrl });
-        console.log("[prisma] creating PrismaNeon adapter, PrismaNeon type:", typeof PrismaNeon, "Pool type:", typeof Pool);
         const adapterInstance = new PrismaNeon(pool);
-        console.log("[prisma] adapter instance created, adapterType:", typeof adapterInstance);
         const client = new PrismaClient({ adapter: adapterInstance });
       if (process.env.NODE_ENV !== "production") (global as any).prisma = client;
       return client;
@@ -81,6 +63,6 @@ function createClient() {
 const prisma = createClient();
 if (process.env.NODE_ENV !== "production") (global as any).prisma = prisma;
 
-console.debug("[prisma] client created, NODE_ENV=", process.env.NODE_ENV);
+// (Diagnostics removed)
 
 export default prisma;
