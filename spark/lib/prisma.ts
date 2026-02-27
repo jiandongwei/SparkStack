@@ -1,8 +1,6 @@
-import { PrismaClient } from "@prisma/client";
-
 declare global {
   // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined;
+  var prisma: any | undefined;
 }
 
 function createClient() {
@@ -28,10 +26,12 @@ function createClient() {
       const { PrismaNeon } = require("@prisma/adapter-neon");
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { Pool } = require("@neondatabase/serverless");
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { PrismaClient } = require("@prisma/client");
 
-        const pool = new Pool({ connectionString: poolUrl });
-        const adapterInstance = new PrismaNeon(pool);
-        const client = new PrismaClient({ adapter: adapterInstance });
+      const pool = new Pool({ connectionString: poolUrl });
+      const adapterInstance = new PrismaNeon(pool);
+      const client = new PrismaClient({ adapter: adapterInstance });
       if (process.env.NODE_ENV !== "production") (global as any).prisma = client;
       return client;
     } catch (err: any) {
@@ -52,6 +52,8 @@ function createClient() {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { PrismaClient } = require("@prisma/client");
   const client = new PrismaClient();
   if (process.env.NODE_ENV !== "production") (global as any).prisma = client;
   return client;
