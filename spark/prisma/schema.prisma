@@ -27,3 +27,12 @@ model Contact {
 
   @@map("contacts")
 }
+
+model Chat {
+  id        Int      @id @default(autoincrement())
+  userId    String   @unique @map("user_id")
+  message   String?  @map("message")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("chats")
+}
