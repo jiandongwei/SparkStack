@@ -1,12 +1,16 @@
 "use client";
 
 import React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import safeRedirect from "@/lib/navigation";
 import { loadFirebase } from "@/lib/firebaseClient";
 import { signInWithPopup } from "firebase/auth";
 import { Button, CircularProgress } from "@mui/material";
 
 export default function GoogleSignInButton() {
   const [loading, setLoading] = React.useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleClick = async () => {
     try {
@@ -28,7 +32,8 @@ export default function GoogleSignInButton() {
         return;
       }
 
-      // Do not automatically redirect after sign-in; the caller will handle navigation
+      const redirectTo = searchParams?.get("callbackUrl") || searchParams?.get("redirectTo");
+      safeRedirect(router, redirectTo);
     } catch (err) {
       console.error("Google sign-in failed", err);
       alert("Google sign-in failed. Check console for details.");
