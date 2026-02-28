@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import safeRedirect from "@/lib/navigation";
 import { loadFirebase } from "@/lib/firebaseClient";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { Box, TextField, Button, Stack, CircularProgress, Alert } from "@mui/material";
@@ -12,6 +13,7 @@ export default function EmailLoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +34,16 @@ export default function EmailLoginForm() {
         setError(json?.error ?? `Server error: ${res.status}`);
         return;
       }
-      router.push("/dashboard");
+      let redirectTo: string | null = null;
+      try {
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search);
+          redirectTo = params.get("callbackUrl") || params.get("redirectTo");
+        }
+      } catch {
+        redirectTo = null;
+      }
+      safeRedirect(router, redirectTo);
     } catch (err: any) {
       console.error("Email sign-in failed", err);
       const message = err?.message ?? String(err);
@@ -60,7 +71,16 @@ export default function EmailLoginForm() {
         setError(json?.error ?? `Server error: ${res.status}`);
         return;
       }
-      router.push("/dashboard");
+      let redirectTo: string | null = null;
+      try {
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search);
+          redirectTo = params.get("callbackUrl") || params.get("redirectTo");
+        }
+      } catch {
+        redirectTo = null;
+      }
+      safeRedirect(router, redirectTo);
     } catch (err: any) {
       console.error("Registration failed", err);
       const message = err?.message ?? String(err);

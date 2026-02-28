@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import safeRedirect from "@/lib/navigation";
 import { useAuth } from "../providers/AuthProvider";
 import Button from "@mui/material/Button";
 
@@ -14,7 +15,7 @@ export default function UserNav({ color, buttonSx }: { color?: string; buttonSx?
     try {
       await signOut();
     } finally {
-      router.push("/login");
+      safeRedirect(router, "/login");
     }
   };
 

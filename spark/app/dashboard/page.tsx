@@ -1,40 +1,35 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import React from "react";
+import { useAuth } from "../providers/AuthProvider";
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
 
 export default function Dashboard() {
-  const [userId, setUserId] = useState<string | null>(null);
-  const router = useRouter();
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    let cancelled = false;
-    async function check() {
-      try {
-        const res = await fetch("/api/user", { credentials: "include" });
-        if (res.status === 401) {
-          router.push("/login");
-          return;
-        }
-        const data = await res.json();
-        if (!cancelled) setUserId(data.userId ?? null);
-      } catch (err) {
-        console.error("Failed to fetch user", err);
-        router.push("/login");
-      }
-    }
-    check();
-    return () => {
-      cancelled = true;
-    };
-  }, [router]);
-
-  if (!userId) return <div className="p-6">Loading...</div>;
+  if (loading) return <Container sx={{ py: 6 }}>Loading...</Container>;
+  if (!user) return <Container sx={{ py: 6 }}>Please sign in to view the dashboard.</Container>;
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-      <p>Welcome back! Your user id is <strong>{userId}</strong>.</p>
-    </div>
+    <Box component="main" sx={{ py: 2 }}>
+      <Container maxWidth="lg">
+        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
+          Dashboard
+        </Typography>
+
+        <Paper sx={{ p: 3, mb: 3 }} elevation={1}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Welcome back
+          </Typography>
+
+          <Typography paragraph>
+            Hello {user.displayName ?? user.email ?? "user"}. Your user id is <strong>{user.uid}</strong>.
+          </Typography>
+        </Paper>
+      </Container>
+    </Box>
   );
 }

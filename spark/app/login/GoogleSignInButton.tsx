@@ -1,12 +1,15 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
+import safeRedirect from "@/lib/navigation";
 import { loadFirebase } from "@/lib/firebaseClient";
 import { signInWithPopup } from "firebase/auth";
 import { Button, CircularProgress } from "@mui/material";
 
 export default function GoogleSignInButton() {
   const [loading, setLoading] = React.useState(false);
+  const router = useRouter();
 
   const handleClick = async () => {
     try {
@@ -28,7 +31,16 @@ export default function GoogleSignInButton() {
         return;
       }
 
-      window.location.href = "/dashboard";
+      let redirectTo: string | null = null;
+      try {
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search);
+          redirectTo = params.get("callbackUrl") || params.get("redirectTo");
+        }
+      } catch {
+        redirectTo = null;
+      }
+      safeRedirect(router, redirectTo);
     } catch (err) {
       console.error("Google sign-in failed", err);
       alert("Google sign-in failed. Check console for details.");

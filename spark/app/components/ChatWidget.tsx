@@ -2,6 +2,15 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../providers/AuthProvider";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import CircularProgress from "@mui/material/CircularProgress";
+import Fab from "@mui/material/Fab";
+import ChatIcon from "@mui/icons-material/ChatBubbleOutline";
 
 export default function ChatWidget() {
   const { user } = useAuth();
@@ -12,7 +21,6 @@ export default function ChatWidget() {
 
   useEffect(() => {
     if (!open) return;
-    // load existing chat for this user
     (async () => {
       try {
         const res = await fetch("/api/chat", { credentials: "include" });
@@ -40,7 +48,6 @@ export default function ChatWidget() {
         setSaved(data.message ?? message);
         setMessage("");
       } else if (res.status === 401) {
-        // user not authenticated
         alert("Please sign in to use chat.");
       } else {
         const txt = await res.text();
@@ -56,78 +63,63 @@ export default function ChatWidget() {
   };
 
   return (
-    <div>
-      <div
-        style={{
-          position: "fixed",
-          right: 20,
-          bottom: 20,
-          zIndex: 9999,
-        }}
-      >
-        {open && (
-          <div
-            style={{
-              width: 320,
-              maxWidth: "calc(100vw - 40px)",
-              background: "white",
-              boxShadow: "0 6px 24px rgba(0,0,0,0.15)",
-              borderRadius: 8,
-              marginBottom: 8,
-              display: "flex",
-              flexDirection: "column",
-              overflow: "hidden",
-            }}
-          >
-            <div style={{ padding: 12, borderBottom: "1px solid #eee", fontWeight: 600 }}>Chat</div>
-            <div style={{ padding: 12, minHeight: 80 }}>
-              {saved ? (
-                <div style={{ whiteSpace: "pre-wrap" }}>{saved}</div>
-              ) : (
-                <div style={{ color: "#666" }}>No messages yet. Say hello!</div>
-              )}
-            </div>
-            <div style={{ padding: 12, borderTop: "1px solid #eee", display: "flex", gap: 8 }}>
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder={user ? "Message to your assistant..." : "Sign in to message"}
-                style={{ flex: 1, minHeight: 40, resize: "vertical" }}
-                disabled={!user}
-              />
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <button onClick={handleSend} disabled={!user || loading} style={{ padding: "8px 12px" }}>
-                  Send
-                </button>
-                <button onClick={() => setOpen(false)} style={{ padding: "6px 12px", fontSize: 12 }}>
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <button
-          onClick={() => setOpen((s) => !s)}
-          aria-label="Open chat"
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-            background: "#1976d2",
-            color: "white",
-            border: "none",
-            boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
-            cursor: "pointer",
+    <Box sx={{ position: "fixed", right: 20, bottom: 20, zIndex: 1400 }}>
+      {open && (
+        <Paper
+          elevation={6}
+          sx={{
+            width: 360,
+            maxWidth: "calc(100vw - 40px)",
+            mb: 1,
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 20,
+            flexDirection: "column",
+            overflow: "hidden",
           }}
         >
-          💬
-        </button>
-      </div>
-    </div>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 1.5, borderBottom: "1px solid rgba(0,0,0,0.08)" }}>
+            <Typography sx={{ fontWeight: 700 }}>Chat</Typography>
+            <IconButton size="small" onClick={() => setOpen(false)} aria-label="Close chat">
+              ✕
+            </IconButton>
+          </Box>
+
+          <Box sx={{ p: 2, minHeight: 96 }}>
+            {saved ? (
+              <Typography sx={{ whiteSpace: "pre-wrap" }}>{saved}</Typography>
+            ) : user ? (
+              <Typography color="text.secondary">No messages yet. Say hello!</Typography>
+            ) : (
+              <Typography color="text.secondary">Sign in to say hello.</Typography>
+            )}
+          </Box>
+
+          <Box sx={{ display: "flex", gap: 1, p: 1.5, borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+            <TextField
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder={user ? "Message to your assistant..." : "Sign in to message"}
+              multiline
+              minRows={1}
+              maxRows={6}
+              fullWidth
+              disabled={!user}
+              size="small"
+            />
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1, alignItems: "stretch" }}>
+              <Button variant="contained" onClick={handleSend} disabled={!user || loading} sx={{ minWidth: 88 }}>
+                {loading ? <CircularProgress size={18} color="inherit" /> : "Send"}
+              </Button>
+              <Button variant="text" onClick={() => setOpen(false)} sx={{ fontSize: 12 }}>
+                Close
+              </Button>
+            </Box>
+          </Box>
+        </Paper>
+      )}
+
+      <Fab color="primary" size="medium" onClick={() => setOpen((s) => !s)} aria-label="Open chat">
+        <ChatIcon />
+      </Fab>
+    </Box>
   );
 }

@@ -22,6 +22,7 @@ import Button from "@mui/material/Button";
 import { useAuth } from "../providers/AuthProvider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import safeRedirect from "@/lib/navigation";
 
 export default function MuiNavbar() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -49,7 +50,7 @@ export default function MuiNavbar() {
     handleAccountMenuClose();
     try {
       await signOut();
-      router.push('/login');
+      safeRedirect(router, '/login');
     } catch (err) {
       console.error('sign out failed', err);
     }
@@ -73,7 +74,7 @@ export default function MuiNavbar() {
           </IconButton>
 
           <Box
-            onClick={() => router.push('/')}
+            onClick={() => safeRedirect(router, '/')}
             sx={{
               flexGrow: { xs: 0, md: 1 },
               cursor: 'pointer',
@@ -92,8 +93,6 @@ export default function MuiNavbar() {
           </Box>
 
           <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1 }}>
-            <Button color="inherit" href="#">Docs</Button>
-            <Button color="inherit" href="#">Pricing</Button>
             {user && (
               <Button color="inherit" component={Link} href="/dashboard">Dashboard</Button>
             )}
@@ -131,7 +130,7 @@ export default function MuiNavbar() {
                     </Box>
                   </Box>
                 ) : (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer' }} onClick={() => { handleMobileMenuClose(); router.push('/'); }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer' }} onClick={() => { handleMobileMenuClose(); safeRedirect(router, '/'); }}>
                     <img src="/sparkstack.png" alt="SparkStack" style={{ height: 36, display: 'block' }} />
                     <Typography variant="h6" component="div">SparkStack</Typography>
                   </Box>
@@ -142,23 +141,14 @@ export default function MuiNavbar() {
               </Box>
               <List>
                 <ListItem disablePadding>
-                  <ListItemButton onClick={() => { handleMobileMenuClose(); router.push('/'); }}>
+                  <ListItemButton onClick={() => { handleMobileMenuClose(); safeRedirect(router, '/'); }}>
                     <ListItemText primary="Home" />
                   </ListItemButton>
                 </ListItem>
-                <ListItem disablePadding>
-                  <ListItemButton onClick={() => { handleMobileMenuClose(); router.push('/docs'); }}>
-                    <ListItemText primary="Docs" />
-                  </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                  <ListItemButton onClick={() => { handleMobileMenuClose(); router.push('/pricing'); }}>
-                    <ListItemText primary="Pricing" />
-                  </ListItemButton>
-                </ListItem>
+                {/* Docs and Pricing removed */}
                 {user && (
                   <ListItem disablePadding>
-                    <ListItemButton onClick={() => { handleMobileMenuClose(); router.push('/dashboard'); }}>
+                    <ListItemButton onClick={() => { handleMobileMenuClose(); safeRedirect(router, '/dashboard'); }}>
                       <ListItemText primary="Dashboard" />
                     </ListItemButton>
                   </ListItem>
@@ -168,14 +158,14 @@ export default function MuiNavbar() {
               <List>
                 {!loading && !user ? (
                   <ListItem disablePadding>
-                    <ListItemButton onClick={() => { handleMobileMenuClose(); router.push('/login'); }}>
+                    <ListItemButton onClick={() => { handleMobileMenuClose(); safeRedirect(router, '/login'); }}>
                       <ListItemText primary="Sign In" />
                     </ListItemButton>
                   </ListItem>
                 ) : (
                   <>
                     <ListItem disablePadding>
-                      <ListItemButton onClick={() => { handleMobileMenuClose(); router.push('/settings'); }}>
+                      <ListItemButton onClick={() => { handleMobileMenuClose(); safeRedirect(router, '/settings'); }}>
                         <ListItemText primary="Settings" />
                       </ListItemButton>
                     </ListItem>
@@ -202,9 +192,9 @@ export default function MuiNavbar() {
           >
             <MenuItem
               onClick={() => {
-                handleAccountMenuClose();
-                router.push('/settings');
-              }}
+                  handleAccountMenuClose();
+                  safeRedirect(router, '/settings');
+                }}
             >
               Settings
             </MenuItem>
