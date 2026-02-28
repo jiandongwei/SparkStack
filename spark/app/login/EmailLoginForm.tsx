@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import safeRedirect from "@/lib/navigation";
 import { loadFirebase } from "@/lib/firebaseClient";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
@@ -13,7 +13,6 @@ export default function EmailLoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
   
 
   const signIn = async (e: React.FormEvent) => {
@@ -35,7 +34,15 @@ export default function EmailLoginForm() {
         setError(json?.error ?? `Server error: ${res.status}`);
         return;
       }
-      const redirectTo = searchParams?.get("callbackUrl") || searchParams?.get("redirectTo");
+      let redirectTo: string | null = null;
+      try {
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search);
+          redirectTo = params.get("callbackUrl") || params.get("redirectTo");
+        }
+      } catch {
+        redirectTo = null;
+      }
       safeRedirect(router, redirectTo);
     } catch (err: any) {
       console.error("Email sign-in failed", err);
@@ -64,7 +71,15 @@ export default function EmailLoginForm() {
         setError(json?.error ?? `Server error: ${res.status}`);
         return;
       }
-      const redirectTo = searchParams?.get("callbackUrl") || searchParams?.get("redirectTo");
+      let redirectTo: string | null = null;
+      try {
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search);
+          redirectTo = params.get("callbackUrl") || params.get("redirectTo");
+        }
+      } catch {
+        redirectTo = null;
+      }
       safeRedirect(router, redirectTo);
     } catch (err: any) {
       console.error("Registration failed", err);
