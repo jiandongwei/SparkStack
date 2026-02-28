@@ -4,7 +4,7 @@ import React from "react";
 import GoogleSignInButton from "./GoogleSignInButton";
 import EmailLoginForm from "./EmailLoginForm";
 import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import safeRedirect from "@/lib/navigation";
 import { useAuth } from "../providers/AuthProvider";
 import {
@@ -22,7 +22,6 @@ import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user, loading } = useAuth();
   const [initialUser, setInitialUser] = React.useState<any | null | undefined>(undefined);
 
@@ -39,14 +38,23 @@ export default function LoginPage() {
   React.useEffect(() => {
     if (initialUser === undefined) return; // not yet determined
     if (!loading && user) {
-      const redirectTo = searchParams?.get("callbackUrl") || searchParams?.get("redirectTo");
+      let redirectTo: string | null = null;
+      try {
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search);
+          redirectTo = params.get("callbackUrl") || params.get("redirectTo");
+        }
+      } catch {
+        redirectTo = null;
+      }
+
       if (redirectTo) return;
       if (initialUser) {
         safeRedirect(router, "/", { replace: true });
       }
       // if initialUser was falsy, user signed in on this page — do nothing here
     }
-  }, [initialUser, user, loading, router, searchParams]);
+  }, [initialUser, user, loading, router]);
 
   return (
     <Box component="main" sx={{ display: "flex", flex: 1, py: { xs: 6, md: 12 } }}>
