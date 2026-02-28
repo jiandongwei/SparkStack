@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { loadFirebase } from "@/lib/firebaseClient";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { Box, TextField, Button, Stack, CircularProgress, Alert } from "@mui/material";
@@ -11,7 +10,7 @@ export default function EmailLoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +31,6 @@ export default function EmailLoginForm() {
         setError(json?.error ?? `Server error: ${res.status}`);
         return;
       }
-      router.push("/dashboard");
     } catch (err: any) {
       console.error("Email sign-in failed", err);
       const message = err?.message ?? String(err);
@@ -60,7 +58,6 @@ export default function EmailLoginForm() {
         setError(json?.error ?? `Server error: ${res.status}`);
         return;
       }
-      router.push("/dashboard");
     } catch (err: any) {
       console.error("Registration failed", err);
       const message = err?.message ?? String(err);
