@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import Toolbar from "@mui/material/Toolbar";
+import Box from "@mui/material/Box";
 
 export default function ClientToolbarSpacer() {
-  return <Toolbar />;
+  return <Box sx={(theme) => theme.mixins.toolbar} />;
 }
