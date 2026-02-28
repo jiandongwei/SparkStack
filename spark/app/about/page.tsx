@@ -9,6 +9,7 @@ import {
   Divider,
   Avatar,
 } from "@mui/material";
+import Link from "next/link";
 
 export default function AboutPage() {
   return (
@@ -34,7 +35,7 @@ export default function AboutPage() {
             </Typography>
 
             <Stack direction="row" spacing={2} sx={{ pt: 1 }}>
-              <Button href="/login" variant="contained" size="large">
+              <Button component={Link} href="/login" variant="contained" size="large">
                 Get started
               </Button>
               <Button href="#learn-more" variant="outlined" size="large" sx={{ color: "#ffd54f", borderColor: "rgba(255,213,79,0.18)" }}>
