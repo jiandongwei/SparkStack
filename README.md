@@ -1,4 +1,4 @@
-# Spark (Next.js) — Cloud Run + Google Authentication
+# SparkStack (Next.js) — Cloud Run + Google Authentication
 
 This repository contains a Next.js application configured to run on Google Cloud Run and use Firebase/Google Authentication for user sign-in.
 
@@ -167,8 +167,3 @@ Notes:
 - Configure a Google Cloud Secret for the Firebase service account and `DATABASE_URL`.
 - Lock down Cloud Run service access if you do not want public unauthenticated access.
 - Add CI that builds and deploys the image to Cloud Run on merges to your production branch.
-
-If you want, I can also:
-- add CI or a `gcloud`-based `deploy.sh` variant that uses Cloud Build,
-- add Secret Manager wiring examples for Cloud Run, or
-- run a quick lint/spell-check of this README.
