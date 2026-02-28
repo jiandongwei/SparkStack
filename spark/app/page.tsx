@@ -20,7 +20,7 @@ export default function Home() {
       <Box
         sx={{
           py: { xs: 2, md: 4 },
-          background: "linear-gradient(135deg,#06b6d4 0%,#7c3aed 50%,#f97316 100%)",
+          background: "linear-gradient(135deg,#f8fafc 0%,#eef2ff 50%,#fff7ed 100%)",
         }}
       >
         <Container maxWidth="lg">
@@ -32,7 +32,7 @@ export default function Home() {
                 gutterBottom
                 sx={{
                   fontWeight: 800,
-                  color: "white",
+                  color: "rgba(15,23,42,0.95)",
                   fontSize: { xs: "1.75rem", sm: "2.25rem", md: "3rem" },
                   lineHeight: { xs: 1.1, md: 1.15 },
                 }}
@@ -40,7 +40,7 @@ export default function Home() {
                 SparkStack — Next.js on Google Cloud Run
               </Typography>
 
-              <Typography variant="h6" paragraph sx={{ color: "rgba(255,255,255,0.95)" }}>
+              <Typography variant="h6" paragraph sx={{ color: "rgba(15,23,42,0.8)" }}>
                 A modern, containerized architecture for private, high-performance AI workflows.
                 SparkStack runs your Next.js app as a lightweight container on Google Cloud Run —
                 giving you instant SSR, predictable scaling, and full control over runtime
