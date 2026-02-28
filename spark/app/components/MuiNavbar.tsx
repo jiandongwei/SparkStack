@@ -92,8 +92,6 @@ export default function MuiNavbar() {
           </Box>
 
           <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1 }}>
-            <Button color="inherit" href="#">Docs</Button>
-            <Button color="inherit" href="#">Pricing</Button>
             {user && (
               <Button color="inherit" component={Link} href="/dashboard">Dashboard</Button>
             )}
@@ -146,16 +144,7 @@ export default function MuiNavbar() {
                     <ListItemText primary="Home" />
                   </ListItemButton>
                 </ListItem>
-                <ListItem disablePadding>
-                  <ListItemButton onClick={() => { handleMobileMenuClose(); router.push('/docs'); }}>
-                    <ListItemText primary="Docs" />
-                  </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                  <ListItemButton onClick={() => { handleMobileMenuClose(); router.push('/pricing'); }}>
-                    <ListItemText primary="Pricing" />
-                  </ListItemButton>
-                </ListItem>
+                {/* Docs and Pricing removed */}
                 {user && (
                   <ListItem disablePadding>
                     <ListItemButton onClick={() => { handleMobileMenuClose(); router.push('/dashboard'); }}>
