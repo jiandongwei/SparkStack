@@ -20,6 +20,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import Button from "@mui/material/Button";
 import { useAuth } from "../providers/AuthProvider";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function MuiNavbar() {
@@ -94,10 +95,10 @@ export default function MuiNavbar() {
             <Button color="inherit" href="#">Docs</Button>
             <Button color="inherit" href="#">Pricing</Button>
             {user && (
-              <Button color="inherit" href="/dashboard">Dashboard</Button>
+              <Button color="inherit" component={Link} href="/dashboard">Dashboard</Button>
             )}
             {!loading && !user && (
-              <Button color="inherit" href="/login">Sign In</Button>
+              <Button color="inherit" component={Link} href="/login">Sign In</Button>
             )}
             {user && (
               <Button
