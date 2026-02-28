@@ -28,7 +28,7 @@ export default function GoogleSignInButton() {
         return;
       }
 
-      window.location.href = "/dashboard";
+      // Do not automatically redirect after sign-in; the caller will handle navigation
     } catch (err) {
       console.error("Google sign-in failed", err);
       alert("Google sign-in failed. Check console for details.");
