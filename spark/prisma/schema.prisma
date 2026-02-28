@@ -17,3 +17,22 @@ model User {
 
   @@map("users")
 }
+
+model Contact {
+  id        Int      @id @default(autoincrement())
+  name      String?  @map("name")
+  email     String?  @map("email")
+  message   String?  @map("message")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("contacts")
+}
+
+model Chat {
+  id        Int      @id @default(autoincrement())
+  userId    String   @unique @map("user_id")
+  message   String?  @map("message")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("chats")
+}

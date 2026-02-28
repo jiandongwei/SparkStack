@@ -20,6 +20,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import Button from "@mui/material/Button";
 import { useAuth } from "../providers/AuthProvider";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function MuiNavbar() {
@@ -93,8 +94,11 @@ export default function MuiNavbar() {
           <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1 }}>
             <Button color="inherit" href="#">Docs</Button>
             <Button color="inherit" href="#">Pricing</Button>
+            {user && (
+              <Button color="inherit" component={Link} href="/dashboard">Dashboard</Button>
+            )}
             {!loading && !user && (
-              <Button color="inherit" href="/login">Sign In</Button>
+              <Button color="inherit" component={Link} href="/login">Sign In</Button>
             )}
             {user && (
               <Button
@@ -152,6 +156,13 @@ export default function MuiNavbar() {
                     <ListItemText primary="Pricing" />
                   </ListItemButton>
                 </ListItem>
+                {user && (
+                  <ListItem disablePadding>
+                    <ListItemButton onClick={() => { handleMobileMenuClose(); router.push('/dashboard'); }}>
+                      <ListItemText primary="Dashboard" />
+                    </ListItemButton>
+                  </ListItem>
+                )}
               </List>
               <Divider />
               <List>

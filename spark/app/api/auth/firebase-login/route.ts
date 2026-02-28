@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdmin } from "@/lib/firebaseAdmin";
-import prisma from "@/lib/prisma";
-import pool from "@/lib/pg";
-import { Prisma } from "@prisma/client";
+// Use Neon serverless pool directly for runtime upserts (avoids `pg` and Prisma runtime adapter issues)
 
 const expiresIn = 60 * 60 * 24 * 7 * 1000; // 1 week in ms for createSessionCookie
 
@@ -34,7 +32,7 @@ export async function POST(req: Request) {
     // create a Firebase session cookie (recommended for server sessions)
     const sessionCookie = await auth.createSessionCookie(idToken, { expiresIn });
 
-    // upsert user into DB using Prisma (with pg fallback)
+    // Upsert user via Neon serverless pool (preferred for runtime; avoids Prisma adapter issues)
     try {
       const uid = decoded.uid;
       const userRecord = await auth.getUser(uid);
@@ -46,36 +44,17 @@ export async function POST(req: Request) {
       });
 
       try {
-        const upserted = await prisma.user.upsert({
-          where: ({ firebaseId: uid } as unknown) as Prisma.UserWhereUniqueInput,
-          update: {
-            email: userRecord.email ?? null,
-            displayName: userRecord.displayName ?? null,
-            photoURL: userRecord.photoURL ?? null,
-          },
-          create: {
-            firebaseId: uid,
-            email: userRecord.email ?? null,
-            displayName: userRecord.displayName ?? null,
-            photoURL: userRecord.photoURL ?? null,
-          },
-        });
-        console.log('[auth/firebase-login] prisma upsert', { id: upserted.id });
-      } catch (e) {
-        console.warn("[auth/firebase-login] prisma upsert failed, falling back to raw SQL", e);
-        try {
-          // fallback: insert/update via pg pool. Ensure your DB has a `users` table with a
-          // unique `firebase_id` column. Column names below are snake_case.
-          const uid = decoded.uid;
-          const userRecord = await auth.getUser(uid);
-          await pool.query(
-            `INSERT INTO users (firebase_id, email, display_name, photo_url) VALUES ($1,$2,$3,$4)
-             ON CONFLICT (firebase_id) DO UPDATE SET email = EXCLUDED.email, display_name = EXCLUDED.display_name, photo_url = EXCLUDED.photo_url`,
-            [uid, userRecord.email ?? null, userRecord.displayName ?? null, userRecord.photoURL ?? null]
-          );
-        } catch (err2) {
-          console.warn("[auth/firebase-login] pg fallback failed", err2);
-        }
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { Pool } = require("@neondatabase/serverless");
+        const pool = new Pool({ connectionString: process.env.DATABASE_URL_POOL ?? process.env.DATABASE_URL });
+        await pool.query(
+          `INSERT INTO users (firebase_id, email, display_name, photo_url) VALUES ($1,$2,$3,$4)
+           ON CONFLICT (firebase_id) DO UPDATE SET email = EXCLUDED.email, display_name = EXCLUDED.display_name, photo_url = EXCLUDED.photo_url`,
+          [uid, userRecord.email ?? null, userRecord.displayName ?? null, userRecord.photoURL ?? null]
+        );
+        console.log('[auth/firebase-login] neon upsert ok', { uid });
+      } catch (err2) {
+        console.warn("[auth/firebase-login] neon upsert failed", err2);
       }
     } catch (e) {
       console.warn("[auth/firebase-login] could not upsert user to DB", e);

@@ -4,6 +4,7 @@ import ClientMuiNavbar from "./components/ClientMuiNavbar";
 import ClientToolbarSpacer from "./components/ClientToolbarSpacer";
 import ClientFooter from "./components/ClientFooter";
 import ClientMuiProvider from "./components/ClientMuiProvider";
+import ChatWidget from "./components/ChatWidget";
 import "./globals.css";
 import AuthProvider from "./providers/AuthProvider";
 
@@ -48,6 +49,7 @@ export default function RootLayout({
             <main style={{ flex: 1 }}>{children}</main>
 
             <ClientFooter />
+            <ChatWidget />
           </ClientMuiProvider>
         </AuthProvider>
       </body>

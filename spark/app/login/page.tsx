@@ -17,6 +17,7 @@ import {
   Avatar,
   Button,
 } from "@mui/material";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -75,10 +76,10 @@ export default function LoginPage() {
                 </Paper>
 
                 <Stack direction="row" spacing={2} justifyContent="center">
-                  <Button href="/about" variant="text" size="small">
+                  <Button component={Link} href="/about" variant="text" size="small">
                     Learn more
                   </Button>
-                  <Button href="/" variant="outlined" size="small">
+                  <Button component={Link} href="/" variant="outlined" size="small">
                     Home
                   </Button>
                 </Stack>
