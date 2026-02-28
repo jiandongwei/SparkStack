@@ -7,6 +7,7 @@ This repository contains a Next.js application configured to run on Google Cloud
 - Firebase client for Google sign-in
 - `firebase-admin` on the server for token verification and admin actions
 - Deployable via Docker to Google Cloud Run
+ - Live demo: https://sparkstack.ca/
 
 ## Quick start (local)
 
