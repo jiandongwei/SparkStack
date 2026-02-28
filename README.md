@@ -118,6 +118,36 @@ gcloud run deploy spark \
 
 For production, wire secrets via Secret Manager and configure `--set-secrets` or set environment variables in the Cloud Run service settings.
 
+## Deploy script (deploy.sh)
+
+A convenience script `deploy.sh` is included at the repo root of `spark/`. It will build, push and deploy the container to Cloud Run using environment variables.
+
+Example usage:
+
+```bash
+# make executable once
+chmod +x deploy.sh
+
+# configure values
+export PROJECT_ID=your-gcp-project
+export REGION=us-central1
+export SERVICE_NAME=spark
+export IMAGE_TAG=latest
+
+# environment variables to pass to the service (comma-separated)
+export ENV_VARS="NEXT_PUBLIC_FIREBASE_API_KEY=...,NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...,DATABASE_URL=..."
+
+# optional: secrets in Cloud Run Secret Manager format (comma-separated)
+export SECRETS="FIREBASE_ADMIN_PRIVATE_KEY=projects/PROJECT_ID/secrets/FIREBASE_ADMIN_PRIVATE_KEY:latest"
+
+# build, push and deploy
+./deploy.sh
+```
+
+Notes:
+- Run `gcloud auth login` and `gcloud auth configure-docker` before pushing images.
+- For production, prefer using Secret Manager and the `SECRETS` env to map secrets into Cloud Run.
+
 ## Local debugging tips
 
 - Use `npm run dev` for hot reload while developing.
@@ -126,6 +156,7 @@ For production, wire secrets via Secret Manager and configure `--set-secrets` or
 ## Useful files
 
 - `Dockerfile` — production container for Cloud Run
+- `deploy.sh` — build/push/deploy helper script
 - `lib/firebaseClient.ts` — browser Firebase initialization
 - `lib/firebaseAdmin.ts` — server Firebase admin initialization
 - `lib/prisma.ts` — Prisma client and Neon/pooled DB handling
@@ -138,6 +169,6 @@ For production, wire secrets via Secret Manager and configure `--set-secrets` or
 - Add CI that builds and deploys the image to Cloud Run on merges to your production branch.
 
 If you want, I can also:
-- add a `deploy.sh` with `gcloud` commands,
-- wire Secret Manager examples for Cloud Run, or
+- add CI or a `gcloud`-based `deploy.sh` variant that uses Cloud Build,
+- add Secret Manager wiring examples for Cloud Run, or
 - run a quick lint/spell-check of this README.
