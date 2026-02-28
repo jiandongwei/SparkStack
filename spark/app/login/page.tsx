@@ -4,7 +4,8 @@ import React from "react";
 import GoogleSignInButton from "./GoogleSignInButton";
 import EmailLoginForm from "./EmailLoginForm";
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import safeRedirect from "@/lib/navigation";
 import { useAuth } from "../providers/AuthProvider";
 import {
   Box,
@@ -21,13 +22,31 @@ import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading } = useAuth();
+  const [initialUser, setInitialUser] = React.useState<any | null | undefined>(undefined);
 
-  useEffect(() => {
-    if (!loading && user) {
-      router.replace("/");
+  // Capture the user state after initial load. If the user was already logged in when
+  // the page first became ready, we should send them to `/` (unless a callback param exists).
+  // If the user logs in while on this page (initialUser === false), let the form components
+  // handle navigation so they can return the user to the originating page.
+  React.useEffect(() => {
+    if (initialUser === undefined && !loading) {
+      setInitialUser(user);
     }
-  }, [user, loading, router]);
+  }, [initialUser, loading, user]);
+
+  React.useEffect(() => {
+    if (initialUser === undefined) return; // not yet determined
+    if (!loading && user) {
+      const redirectTo = searchParams?.get("callbackUrl") || searchParams?.get("redirectTo");
+      if (redirectTo) return;
+      if (initialUser) {
+        safeRedirect(router, "/", { replace: true });
+      }
+      // if initialUser was falsy, user signed in on this page — do nothing here
+    }
+  }, [initialUser, user, loading, router, searchParams]);
 
   return (
     <Box component="main" sx={{ display: "flex", flex: 1, py: { xs: 6, md: 12 } }}>
