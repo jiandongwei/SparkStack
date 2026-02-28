@@ -1,181 +1,143 @@
-🚀 SparkStack Deployment Guide
-Next.js + Firebase Auth + Cloud Run + Firebase Hosting
+# Spark (Next.js) — Cloud Run + Google Authentication
 
-This guide documents the exact, working deployment pipeline for SparkStack.
-It covers:
+This repository contains a Next.js application configured to run on Google Cloud Run and use Firebase/Google Authentication for user sign-in.
 
-Building Next.js with environment variables
+**Highlights**
+- Next.js frontend (App Router)
+- Firebase client for Google sign-in
+- `firebase-admin` on the server for token verification and admin actions
+- Deployable via Docker to Google Cloud Run
 
-Deploying to Cloud Run using Docker + Kaniko
+## Quick start (local)
 
-Configuring Firebase Hosting to proxy to Cloud Run
+1. Install deps and run dev server:
 
-Avoiding common pitfalls (.gcloudignore, .dockerignore, static hosting conflicts)
+```bash
+npm install
+npm run dev
+```
 
-📦 1. Project Structure
-Code
-spark/
-  app/
-  lib/
-  public/
-  Dockerfile
-  .gcloudignore
-  .env.production
-  package.json
-  next.config.ts
-  firebase.json
-🔐 2. Environment Variables
-Create a file:
+2. Open http://localhost:3000
 
-Code
-.env.production
-Example:
+The app uses the Firebase web SDK in the browser, so ensure client-side Firebase env vars (see below) are available when running locally.
 
-Code
-NEXT_PUBLIC_FIREBASE_API_KEY=...
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
-NEXT_PUBLIC_FIREBASE_APP_ID=...
-These values are baked into the Next.js build during Docker build.
+## Environment variables
 
-🧹 3. .gcloudignore (critical)
-Cloud Build ignores files by default, including .env.*, unless you override it.
+Required (client-side, prefixed with `NEXT_PUBLIC_` and used by the browser):
 
-Create:
+- `NEXT_PUBLIC_FIREBASE_API_KEY`
+- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+- `NEXT_PUBLIC_FIREBASE_APP_ID`
 
-Code
-.gcloudignore
-Contents:
+Required (server-side):
 
-Code
-# Allow env files
-!.env.production
-!.env.local
+- `FIREBASE_ADMIN_PROJECT_ID` — service account `project_id` or leave blank if using default credentials
+- `FIREBASE_ADMIN_CLIENT_EMAIL` — service account `client_email`
+- `FIREBASE_ADMIN_PRIVATE_KEY` — service account `private_key` (replace newlines with `\\n` when storing in env)
+- Alternatively set `GOOGLE_APPLICATION_CREDENTIALS` to a service account JSON file path (Cloud Run / local fallback)
+- `DATABASE_URL` or `DATABASE_URL_POOL` — Prisma/Postgres database connection string
 
-# Ignore only what we truly don't want
-node_modules
-.next
-.git
-This ensures Cloud Build includes your env files.
+Optional:
 
-🐳 4. Dockerfile (Next.js → Cloud Run)
-Use the official Next.js standalone output:
+- `PORT` — port for the container (Dockerfile uses `8080` for Cloud Run)
+- `NODE_ENV` — `production` or `development`
 
-dockerfile
-# Build stage
-FROM node:20-alpine AS builder
-WORKDIR /app
+Secrets: for Cloud Run prefer using Secret Manager and mounting or wiring secrets via `--set-secrets` or the Cloud Console.
 
-COPY package.json package-lock.json ./
-RUN npm install
+## Firebase setup (high-level)
 
-COPY . .
+1. Create a Firebase project in the Firebase Console.
+2. In *Project settings → Your apps*, register a Web app and copy the Firebase config values into your `NEXT_PUBLIC_...` env vars.
+3. In *Project settings → Service accounts*, create a new service account key (JSON). Use the `client_email`, `project_id` and `private_key` fields to populate the server env vars above, or set `GOOGLE_APPLICATION_CREDENTIALS` to the JSON file on your runtime.
 
-ENV NODE_ENV=production
-RUN npm run build
+Notes:
+- `lib/firebaseClient.ts` expects the `NEXT_PUBLIC_FIREBASE_*` client vars.
+- `lib/firebaseAdmin.ts` will initialize `firebase-admin` using `FIREBASE_ADMIN_*` env vars or fall back to default credentials (e.g., `GOOGLE_APPLICATION_CREDENTIALS`).
 
-# Run stage
-FROM node:20-alpine AS runner
-WORKDIR /app
+## Database / Prisma
 
-ENV NODE_ENV=production
-ENV PORT=8080
+- The project uses Prisma. Provide `DATABASE_URL` (for migrations) or `DATABASE_URL_POOL` (pooled runtime URL for Neon). See `lib/prisma.ts`.
+- To run migrations locally (if applicable):
 
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+```bash
+npx prisma migrate deploy
+```
 
-EXPOSE 8080
-CMD ["node", "server.js"]
-🏗 5. Enable Kaniko (recommended)
-Kaniko avoids Docker’s default ignore rules.
+Or to push the schema for development:
 
-bash
-gcloud config set builds/use_kaniko True
-🚢 6. Build & Deploy to Cloud Run
-From inside the spark/ directory:
+```bash
+npx prisma db push
+```
 
-bash
-gcloud builds submit --tag gcr.io/<PROJECT_ID>/next-app
-Then deploy:
+## Build & run with Docker (Cloud Run friendly)
 
-bash
-gcloud run deploy next-app \
-  --image gcr.io/<PROJECT_ID>/next-app \
-  --region us-central1 \
+The included `Dockerfile` builds a production Next.js standalone image and exposes port `8080`.
+
+Build locally:
+
+```bash
+# from repo/spark
+docker build -t gcr.io/PROJECT_ID/spark:latest .
+```
+
+Run locally:
+
+```bash
+docker run -p 8080:8080 \
+  -e NEXT_PUBLIC_FIREBASE_API_KEY=... \
+  -e FIREBASE_ADMIN_PROJECT_ID=... \
+  -e FIREBASE_ADMIN_CLIENT_EMAIL=... \
+  -e FIREBASE_ADMIN_PRIVATE_KEY=... \
+  -e DATABASE_URL=... \
+  gcr.io/PROJECT_ID/spark:latest
+```
+
+## Deploy to Google Cloud Run
+
+1. Build and push the image (replace `PROJECT_ID` and `REGION`):
+
+```bash
+# build and push
+docker build -t gcr.io/PROJECT_ID/spark:latest .
+docker push gcr.io/PROJECT_ID/spark:latest
+```
+
+2. Deploy to Cloud Run:
+
+```bash
+gcloud run deploy spark \
+  --image gcr.io/PROJECT_ID/spark:latest \
+  --region REGION \
   --platform managed \
-  --allow-unauthenticated
-Cloud Run URL will look like:
+  --allow-unauthenticated \
+  --set-env-vars NEXT_PUBLIC_FIREBASE_API_KEY=...,NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...,DATABASE_URL=...
+```
 
-Code
-https://next-app-<PROJECT_ID>.us-central1.run.app
-This URL should show correct env vars at /debug.
+For production, wire secrets via Secret Manager and configure `--set-secrets` or set environment variables in the Cloud Run service settings.
 
-🌐 7. Firebase Hosting → Cloud Run Proxy
-To make spark-stack.web.app serve the Cloud Run app, use this firebase.json:
+## Local debugging tips
 
-json
-{
-  "hosting": {
-    "rewrites": [
-      {
-        "source": "**",
-        "run": {
-          "serviceId": "next-app",
-          "region": "us-central1"
-        }
-      }
-    ]
-  }
-}
-Important:  
-Do not include "public": "." — it causes Firebase Hosting to serve static files instead of Cloud Run.
+- Use `npm run dev` for hot reload while developing.
+- If using Firebase Emulator Suite locally, set client and server env vars accordingly and enable emulator endpoints in your local code (not committed to production).
 
-Deploy:
+## Useful files
 
-bash
-firebase deploy --only hosting
-Now:
+- `Dockerfile` — production container for Cloud Run
+- `lib/firebaseClient.ts` — browser Firebase initialization
+- `lib/firebaseAdmin.ts` — server Firebase admin initialization
+- `lib/prisma.ts` — Prisma client and Neon/pooled DB handling
+- `app/` — Next.js App Router pages and components
 
-Code
-spark-stack.web.app → Cloud Run → correct env vars
-🧪 8. Debugging
-Visit:
+## Next steps / recommendations
 
-Code
-/debug
-You should see:
+- Configure a Google Cloud Secret for the Firebase service account and `DATABASE_URL`.
+- Lock down Cloud Run service access if you do not want public unauthenticated access.
+- Add CI that builds and deploys the image to Cloud Run on merges to your production branch.
 
-json
-{
-  "apiKey": "...",
-  "authDomain": "...",
-  "projectId": "...",
-  "storageBucket": "...",
-  "messagingSenderId": "...",
-  "appId": "..."
-}
-If you see {}:
-
-Firebase Hosting is serving static files (remove "public")
-
-Cloud Build is ignoring env files (fix .gcloudignore)
-
-Dockerfile is not copying the standalone output correctly
-
-🎉 9. Summary
-You now have a fully working deployment pipeline:
-
-Next.js built with .env.production
-
-Docker + Kaniko build on Cloud Build
-
-Cloud Run serving the app
-
-Firebase Hosting proxying to Cloud Run
-
-Correct env vars everywhere
-
-This setup is production‑grade, reproducible, and avoids all the common pitfalls.
+If you want, I can also:
+- add a `deploy.sh` with `gcloud` commands,
+- wire Secret Manager examples for Cloud Run, or
+- run a quick lint/spell-check of this README.
