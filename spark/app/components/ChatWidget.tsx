@@ -86,8 +86,10 @@ export default function ChatWidget() {
           <Box sx={{ p: 2, minHeight: 96 }}>
             {saved ? (
               <Typography sx={{ whiteSpace: "pre-wrap" }}>{saved}</Typography>
-            ) : (
+            ) : user ? (
               <Typography color="text.secondary">No messages yet. Say hello!</Typography>
+            ) : (
+              <Typography color="text.secondary">Sign in to say hello.</Typography>
             )}
           </Box>
 
