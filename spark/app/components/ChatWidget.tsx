@@ -16,7 +16,7 @@ export default function ChatWidget() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
-  const [saved, setSaved] = useState<string | null>(null);
+  const [saved, setSaved] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function ChatWidget() {
         const res = await fetch("/api/chat", { credentials: "include" });
         if (!res.ok) return;
         const data = await res.json();
-        if (data?.message) setSaved(data.message);
+        if (data) setSaved(data);
       } catch (err) {
         // ignore
       }
@@ -45,7 +45,7 @@ export default function ChatWidget() {
       });
       if (res.ok) {
         const data = await res.json();
-        setSaved(data.message ?? message);
+        setSaved(data ?? { message });
         setMessage("");
       } else if (res.status === 401) {
         alert("Please sign in to use chat.");
@@ -85,7 +85,23 @@ export default function ChatWidget() {
 
           <Box sx={{ p: 2, minHeight: 96 }}>
             {saved ? (
-              <Typography sx={{ whiteSpace: "pre-wrap" }}>{saved}</Typography>
+              saved.assistant_message ? (
+                <>
+                  <Typography sx={{ whiteSpace: "pre-wrap", mb: 1 }}>{saved.assistant_message}</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+                    {saved.assistant_model ? `${saved.assistant_model}` : "assistant"}
+                    {saved.assistant_created_at ? ` · ${new Date(saved.assistant_created_at).toLocaleString()}` : ""}
+                  </Typography>
+                  {saved.assistant_response && (
+                    <details>
+                      <summary style={{ cursor: "pointer", color: "rgba(0,0,0,0.6)", fontSize: 12 }}>Response details</summary>
+                      <pre style={{ whiteSpace: "pre-wrap", maxHeight: 200, overflow: "auto", fontSize: 12 }}>{JSON.stringify(saved.assistant_response, null, 2)}</pre>
+                    </details>
+                  )}
+                </>
+              ) : (
+                <Typography sx={{ whiteSpace: "pre-wrap" }}>{saved.message}</Typography>
+              )
             ) : user ? (
               <Typography color="text.secondary">No messages yet. Say hello!</Typography>
             ) : (
