@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdmin } from "@/lib/firebaseAdmin";
+import { randomUUID } from "crypto";
 
 async function getSessionFromRequest(req: Request) {
   const cookieHeader = req.headers.get("cookie") || "";
@@ -29,8 +30,21 @@ export async function GET(req: Request) {
 
     // Schema is managed via migrations (Prisma). Assume `chats` table exists.
 
-    const r: any = await pool.query(
-      "SELECT id,user_id,message,assistant_message,assistant_model,assistant_created_at,assistant_response,created_at FROM chats WHERE user_id = $1",
+    const url = new URL(req.url);
+    const sessionId = url.searchParams.get("sessionId");
+
+    let r: any;
+    if (sessionId) {
+      r = await pool.query(
+        "SELECT id,user_id,session_id,message,assistant_message,assistant_model,assistant_created_at,assistant_response,created_at FROM chats WHERE user_id = $1 AND session_id = $2 ORDER BY created_at ASC",
+        [uid, sessionId]
+      );
+      await pool.end();
+      return NextResponse.json(r.rows ?? []);
+    }
+
+    r = await pool.query(
+      "SELECT id,user_id,session_id,message,assistant_message,assistant_model,assistant_created_at,assistant_response,created_at FROM chats WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1",
       [uid]
     );
     await pool.end();
@@ -67,13 +81,15 @@ export async function POST(req: Request) {
 
     // Schema is managed via migrations (Prisma). Assume `chats` table exists.
 
-    // Upsert the user's message
+    // Determine or create session id
+    const sessionId = parsed.sessionId || randomUUID();
+
+    // Insert the user's message as a new row for this session
     const up: any = await pool.query(
-      `INSERT INTO chats (user_id,message,created_at)
-       VALUES ($1,$2,now())
-       ON CONFLICT (user_id) DO UPDATE SET message = EXCLUDED.message, created_at = EXCLUDED.created_at
-       RETURNING id,user_id,message,created_at`,
-      [uid, message]
+      `INSERT INTO chats (user_id,session_id,message,created_at)
+       VALUES ($1,$2,$3,now())
+       RETURNING id,user_id,session_id,message,created_at`,
+      [uid, sessionId, message]
     );
 
     let resultRow = up.rows[0];
@@ -103,49 +119,20 @@ export async function POST(req: Request) {
       const assistantCreatedAt = data?.createTime ? new Date(data.createTime).toISOString() : new Date().toISOString();
 
       const up2: any = await pool.query(
-        `UPDATE chats SET assistant_message = $1, assistant_model = $2, assistant_created_at = $3, assistant_response = $4 WHERE id = $5 RETURNING id,user_id,message,assistant_message,assistant_model,assistant_created_at,assistant_response,created_at`,
+        `UPDATE chats SET assistant_message = $1, assistant_model = $2, assistant_created_at = $3, assistant_response = $4 WHERE id = $5 RETURNING id,user_id,session_id,message,assistant_message,assistant_model,assistant_created_at,assistant_response,created_at`,
         [assistantText, assistantModel, assistantCreatedAt, JSON.stringify(data ?? {}), resultRow.id]
       );
       resultRow = up2.rows[0];
     } catch (err) {
-      console.warn(
-        "Vertex AI call failed or ADC not configured; attempting fallback:",
-        err instanceof Error ? err.message : String(err)
+      console.warn("Vertex AI call failed; not using Generative Language fallback:", err instanceof Error ? err.message : String(err));
+      const assistantText = "Assistant unavailable: internal error. Please try again later.";
+      const assistantModel = "vertex-failed";
+      const assistantCreatedAt = new Date().toISOString();
+      const up2: any = await pool.query(
+        `UPDATE chats SET assistant_message = $1, assistant_model = $2, assistant_created_at = $3, assistant_response = $4 WHERE id = $5 RETURNING id,user_id,session_id,message,assistant_message,assistant_model,assistant_created_at,assistant_response,created_at`,
+        [assistantText, assistantModel, assistantCreatedAt, JSON.stringify({ error: String(err) }), resultRow.id]
       );
-
-      // Fallback 1: Generative Language API using API key (express mode)
-      const apiKey = process.env.GOOGLE_API_KEY;
-      const fallbackModel = process.env.GENERATIVE_TEXT_MODEL || "gemini-2.5-flash-lite";
-      const prompt = `You are a helpful assistant. Keep responses concise and friendly.\nUser: ${message}`;
-
-      if (apiKey) {
-        try {
-          const resp = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta2/models/${fallbackModel}:generateText?key=${apiKey}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ prompt: { text: prompt }, temperature: 0.2, maxOutputTokens: 512 }),
-            }
-          );
-          const data = await resp.json();
-          const candidate = (data?.candidates && data.candidates[0]) || data?.candidate || null;
-          const assistantText = (candidate?.content?.parts && candidate.content.parts.map((p: any) => p.text).join("")) || candidate?.content || candidate?.output || candidate?.text || data?.output || JSON.stringify(data);
-          const assistantModel = data?.modelVersion || fallbackModel;
-          const assistantCreatedAt = data?.createTime ? new Date(data.createTime).toISOString() : new Date().toISOString();
-
-          const up2: any = await pool.query(
-            `UPDATE chats SET assistant_message = $1, assistant_model = $2, assistant_created_at = $3, assistant_response = $4 WHERE id = $5 RETURNING id,user_id,message,assistant_message,assistant_model,assistant_created_at,assistant_response,created_at`,
-            [assistantText, assistantModel, assistantCreatedAt, JSON.stringify(data ?? {}), resultRow.id]
-          );
-          resultRow = up2.rows[0];
-        } catch (err2) {
-          console.error(
-            "Generative Language API (API key) fallback failed:",
-            err2 instanceof Error ? err2.message : String(err2)
-          );
-        }
-      }
+      resultRow = up2.rows[0];
     }
 
     await pool.end();

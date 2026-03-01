@@ -30,7 +30,8 @@ model Contact {
 
 model Chat {
   id        Int      @id @default(autoincrement())
-  userId    String   @unique @map("user_id")
+  userId    String   @map("user_id")
+  sessionId String?  @map("session_id")
   message   String?  @map("message")
   assistantMessage String? @map("assistant_message")
   assistantModel   String? @map("assistant_model")
