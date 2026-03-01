@@ -58,6 +58,38 @@ Notes:
 - `lib/firebaseClient.ts` expects the `NEXT_PUBLIC_FIREBASE_*` client vars.
 - `lib/firebaseAdmin.ts` will initialize `firebase-admin` using `FIREBASE_ADMIN_*` env vars or fall back to default credentials (e.g., `GOOGLE_APPLICATION_CREDENTIALS`).
 
+## First admin (one-time)
+
+To set up the very first administrator who can manage other admins, follow these steps:
+
+- Ensure server credentials are available (one of):
+  - Provide `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, and `FIREBASE_ADMIN_PRIVATE_KEY` in `spark/.env.local` (escape newlines with `\\n`), or
+  - Set `GOOGLE_APPLICATION_CREDENTIALS` to a service-account JSON file path.
+
+- Find the user's Firebase UID (Firebase Console → Authentication, or sign in and call `GET /api/user`).
+
+- Run the helper script from the `spark/` folder to assign the `admin` custom claim and revoke refresh tokens:
+
+```bash
+cd spark
+node scripts/set-admin.js <USER_UID>
+```
+
+The script loads `spark/.env.local` and initializes `firebase-admin`. After it completes, have the user sign out and sign back in so their token/session picks up the new `admin` claim.
+
+- Verify by visiting the admin UI after signing in as that user:
+
+```
+http://localhost:3000/admin/users
+```
+
+- To remove admin rights you can click **Remove Admin** in the UI, or run a quick one-liner to clear the custom claims:
+
+```bash
+cd spark
+node -e "require('dotenv').config(); const admin=require('firebase-admin'); const svc={projectId:process.env.FIREBASE_ADMIN_PROJECT_ID, clientEmail:process.env.FIREBASE_ADMIN_CLIENT_EMAIL, privateKey:process.env.FIREBASE_ADMIN_PRIVATE_KEY.replace(/\\n/g,'\n')}; admin.initializeApp({credential:admin.credential.cert(svc)}); admin.auth().setCustomUserClaims('<USER_UID>', {}).then(()=>console.log('cleared')).catch(console.error)"
+```
+
 ## Database / Prisma
 
 - The project uses Prisma. Provide `DATABASE_URL` (for migrations) or `DATABASE_URL_POOL` (pooled runtime URL for Neon). See `lib/prisma.ts`.
