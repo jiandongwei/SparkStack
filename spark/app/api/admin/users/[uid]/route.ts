@@ -14,7 +14,9 @@ function parseSessionFromCookieHeader(cookieHeader: string | null) {
   }
 }
 
-export async function POST(req: Request, { params }: { params: { uid: string } }) {
+export async function POST(req: Request, ctx: { params: any }) {
+  const { params } = ctx;
+  const resolvedParams = params && typeof params.then === "function" ? await params : params;
   const cookieHeader = req.headers.get("cookie") ?? null;
   const session = parseSessionFromCookieHeader(cookieHeader);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -24,7 +26,7 @@ export async function POST(req: Request, { params }: { params: { uid: string } }
     const decoded = await admin.auth().verifySessionCookie(session, true);
     if (!(decoded as any).admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-    const uid = params.uid;
+    const uid = resolvedParams?.uid ?? params?.uid;
     await admin.auth().setCustomUserClaims(uid, { admin: true });
     return NextResponse.json({ ok: true });
   } catch (err) {
@@ -32,7 +34,9 @@ export async function POST(req: Request, { params }: { params: { uid: string } }
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { uid: string } }) {
+export async function DELETE(req: Request, ctx: { params: any }) {
+  const { params } = ctx;
+  const resolvedParams = params && typeof params.then === "function" ? await params : params;
   const cookieHeader = req.headers.get("cookie") ?? null;
   const session = parseSessionFromCookieHeader(cookieHeader);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -42,7 +46,7 @@ export async function DELETE(req: Request, { params }: { params: { uid: string }
     const decoded = await admin.auth().verifySessionCookie(session, true);
     if (!(decoded as any).admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-    const uid = params.uid;
+    const uid = resolvedParams?.uid ?? params?.uid;
     await admin.auth().setCustomUserClaims(uid, {});
     return NextResponse.json({ ok: true });
   } catch (err) {
