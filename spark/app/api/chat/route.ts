@@ -12,6 +12,7 @@ async function getSessionFromRequest(req: Request) {
   }
 }
 
+
 export async function GET(req: Request) {
   const sessionCookie = await getSessionFromRequest(req);
   if (!sessionCookie) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
