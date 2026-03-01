@@ -37,6 +37,7 @@ model Chat {
   assistantModel   String? @map("assistant_model")
   assistantCreatedAt DateTime? @map("assistant_created_at")
   assistantResponse Json? @map("assistant_response")
+  state     Json?    @map("state")
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("chats")
