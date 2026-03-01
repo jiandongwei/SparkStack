@@ -28,7 +28,7 @@ export async function GET(req: Request) {
 
     // Schema is managed via migrations (Prisma). Assume `chats` table exists.
 
-    const r = await pool.query(
+    const r: any = await pool.query(
       "SELECT id,user_id,message,assistant_message,assistant_model,assistant_created_at,assistant_response,created_at FROM chats WHERE user_id = $1",
       [uid]
     );
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
     // Schema is managed via migrations (Prisma). Assume `chats` table exists.
 
     // Upsert the user's message
-    const up = await pool.query(
+    const up: any = await pool.query(
       `INSERT INTO chats (user_id,message,created_at)
        VALUES ($1,$2,now())
        ON CONFLICT (user_id) DO UPDATE SET message = EXCLUDED.message, created_at = EXCLUDED.created_at
@@ -101,13 +101,16 @@ export async function POST(req: Request) {
       const assistantModel = data?.modelVersion || TEXT_MODEL;
       const assistantCreatedAt = data?.createTime ? new Date(data.createTime).toISOString() : new Date().toISOString();
 
-      const up2 = await pool.query(
+      const up2: any = await pool.query(
         `UPDATE chats SET assistant_message = $1, assistant_model = $2, assistant_created_at = $3, assistant_response = $4 WHERE id = $5 RETURNING id,user_id,message,assistant_message,assistant_model,assistant_created_at,assistant_response,created_at`,
         [assistantText, assistantModel, assistantCreatedAt, JSON.stringify(data ?? {}), resultRow.id]
       );
       resultRow = up2.rows[0];
     } catch (err) {
-      console.warn("Vertex AI call failed or ADC not configured; attempting fallback:", err?.message ?? err);
+      console.warn(
+        "Vertex AI call failed or ADC not configured; attempting fallback:",
+        err instanceof Error ? err.message : String(err)
+      );
 
       // Fallback 1: Generative Language API using API key (express mode)
       const apiKey = process.env.GOOGLE_API_KEY;
@@ -130,13 +133,16 @@ export async function POST(req: Request) {
           const assistantModel = data?.modelVersion || fallbackModel;
           const assistantCreatedAt = data?.createTime ? new Date(data.createTime).toISOString() : new Date().toISOString();
 
-          const up2 = await pool.query(
+          const up2: any = await pool.query(
             `UPDATE chats SET assistant_message = $1, assistant_model = $2, assistant_created_at = $3, assistant_response = $4 WHERE id = $5 RETURNING id,user_id,message,assistant_message,assistant_model,assistant_created_at,assistant_response,created_at`,
             [assistantText, assistantModel, assistantCreatedAt, JSON.stringify(data ?? {}), resultRow.id]
           );
           resultRow = up2.rows[0];
         } catch (err2) {
-          console.error("Generative Language API (API key) fallback failed:", err2?.message ?? err2);
+          console.error(
+            "Generative Language API (API key) fallback failed:",
+            err2 instanceof Error ? err2.message : String(err2)
+          );
         }
       }
     }
