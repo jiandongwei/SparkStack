@@ -2,7 +2,9 @@ import { ReactNode } from "react";
 import { headers, cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getAdmin } from "@/lib/firebaseAdmin";
-import AdminNavbar from "@/app/components/AdminNavbar";
+import AdminMuiProvider from "@/app/components/AdminMuiProvider";
+import AdminTopbar from "@/app/components/AdminTopbar";
+import AdminFooter from "@/app/components/AdminFooter";
 
 async function parseSessionFromCookies() {
   // Try the Cookies API first (some runtimes provide this)
@@ -54,12 +56,16 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   return (
-    <div style={{ padding: 16 }}>
-      <header style={{ marginBottom: 16 }}>
-        <h1>Admin Console</h1>
-        <AdminNavbar />
-      </header>
-      <main>{children}</main>
-    </div>
+    <AdminMuiProvider>
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <header>
+          <AdminTopbar />
+        </header>
+        <main style={{ flex: 1, padding: 24 }}>{children}</main>
+        <footer>
+          <AdminFooter />
+        </footer>
+      </div>
+    </AdminMuiProvider>
   );
 }
