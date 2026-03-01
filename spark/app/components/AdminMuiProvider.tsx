@@ -9,10 +9,11 @@ export default function AdminMuiProvider({ children }: { children: React.ReactNo
     () =>
       createTheme({
         palette: {
-          mode: "dark",
-          primary: { main: "#0D47A1" },
-          background: { default: "#0b1220", paper: "#0b1220" },
-          text: { primary: "#ffffff" },
+          mode: "light",
+          // light gray primary for admin topnav/footer
+          primary: { main: "#e0e0e0", contrastText: "#0f172a" },
+          background: { default: "#f5f5f6", paper: "#ffffff" },
+          text: { primary: "#0f172a" },
         },
         typography: {
           fontFamily: "inherit",
@@ -21,8 +22,8 @@ export default function AdminMuiProvider({ children }: { children: React.ReactNo
           MuiAppBar: {
             styleOverrides: {
               colorPrimary: {
-                backgroundColor: "#0b1220",
-                color: "#fff",
+                backgroundColor: "#e0e0e0",
+                color: "#0f172a",
               },
             },
           },
