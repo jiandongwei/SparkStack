@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "../providers/AuthProvider";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -16,7 +16,9 @@ export default function ChatWidget() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
-  const [saved, setSaved] = useState<any | null>(null);
+  const [messages, setMessages] = useState<any[] | null>(null);
+  const [visibleCount, setVisibleCount] = useState(10);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -26,7 +28,10 @@ export default function ChatWidget() {
         const res = await fetch("/api/chat", { credentials: "include" });
         if (!res.ok) return;
         const data = await res.json();
-        if (data) setSaved(data);
+        if (data) {
+          setMessages(Array.isArray(data) ? data : [data]);
+          setVisibleCount(Math.min(10, Array.isArray(data) ? data.length : 1));
+        }
       } catch (err) {
         // ignore
       }
@@ -45,7 +50,14 @@ export default function ChatWidget() {
       });
       if (res.ok) {
         const data = await res.json();
-        setSaved(data ?? { message });
+        // Insert new message row to messages list (append to end)
+        setMessages((prev) => {
+          const arr = prev ? [...prev] : [];
+          arr.push(data ?? { message });
+          return arr;
+        });
+        // ensure the newly sent message is visible
+        setVisibleCount((c) => Math.min((messages?.length ?? 0) + 1, Math.max(c, 10)));
         setMessage("");
       } else if (res.status === 401) {
         alert("Please sign in to use chat.");
@@ -59,6 +71,16 @@ export default function ChatWidget() {
       alert("Failed to send message");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onScroll = () => {
+    const el = containerRef.current;
+    if (!el || !messages) return;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 16) {
+      if (visibleCount < messages.length) {
+        setVisibleCount((c) => Math.min(messages.length, c + 10));
+      }
     }
   };
 
@@ -83,30 +105,40 @@ export default function ChatWidget() {
             </IconButton>
           </Box>
 
-          <Box sx={{ p: 2, minHeight: 96 }}>
-            {saved ? (
-              saved.assistant_message ? (
-                <>
-                  <Typography sx={{ whiteSpace: "pre-wrap", mb: 1 }}>{saved.assistant_message}</Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
-                    {saved.assistant_model ? `${saved.assistant_model}` : "assistant"}
-                    {saved.assistant_created_at ? ` · ${new Date(saved.assistant_created_at).toLocaleString()}` : ""}
-                  </Typography>
-                  {saved.assistant_response && (
-                    <details>
-                      <summary style={{ cursor: "pointer", color: "rgba(0,0,0,0.6)", fontSize: 12 }}>Response details</summary>
-                      <pre style={{ whiteSpace: "pre-wrap", maxHeight: 200, overflow: "auto", fontSize: 12 }}>{JSON.stringify(saved.assistant_response, null, 2)}</pre>
-                    </details>
-                  )}
-                </>
+          <Box sx={{ p: 0 }}>
+            <Box
+              ref={containerRef}
+              onScroll={onScroll}
+              sx={{ p: 2, minHeight: 96, maxHeight: 320, overflow: "auto" }}
+            >
+              {messages && messages.length > 0 ? (
+                messages.slice(0, visibleCount).map((m: any, i: number) => (
+                  <Box key={m.id ?? i} sx={{ mb: 1 }}>
+                    {m.assistant_message ? (
+                      <>
+                        <Typography sx={{ whiteSpace: "pre-wrap", mb: 0.5 }}>{m.assistant_message}</Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
+                          {m.assistant_model ? `${m.assistant_model}` : "assistant"}
+                          {m.assistant_created_at ? ` · ${new Date(m.assistant_created_at).toLocaleString()}` : ""}
+                        </Typography>
+                        {m.assistant_response && (
+                          <details>
+                            <summary style={{ cursor: "pointer", color: "rgba(0,0,0,0.6)", fontSize: 12 }}>Response details</summary>
+                            <pre style={{ whiteSpace: "pre-wrap", maxHeight: 200, overflow: "auto", fontSize: 12 }}>{JSON.stringify(m.assistant_response, null, 2)}</pre>
+                          </details>
+                        )}
+                      </>
+                    ) : (
+                      <Typography sx={{ whiteSpace: "pre-wrap" }}>{m.message}</Typography>
+                    )}
+                  </Box>
+                ))
+              ) : user ? (
+                <Typography color="text.secondary" sx={{ p: 2 }}>No messages yet. Say hello!</Typography>
               ) : (
-                <Typography sx={{ whiteSpace: "pre-wrap" }}>{saved.message}</Typography>
-              )
-            ) : user ? (
-              <Typography color="text.secondary">No messages yet. Say hello!</Typography>
-            ) : (
-              <Typography color="text.secondary">Sign in to say hello.</Typography>
-            )}
+                <Typography color="text.secondary" sx={{ p: 2 }}>Sign in to say hello.</Typography>
+              )}
+            </Box>
           </Box>
 
           <Box sx={{ display: "flex", gap: 1, p: 1.5, borderTop: "1px solid rgba(0,0,0,0.06)" }}>
