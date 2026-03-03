@@ -48,8 +48,8 @@ export async function POST(req: Request) {
         const { Pool } = require("@neondatabase/serverless");
         const pool = new Pool({ connectionString: process.env.DATABASE_URL_POOL ?? process.env.DATABASE_URL });
         await pool.query(
-          `INSERT INTO users (firebase_id, email, display_name, photo_url) VALUES ($1,$2,$3,$4)
-           ON CONFLICT (firebase_id) DO UPDATE SET email = EXCLUDED.email, display_name = EXCLUDED.display_name, photo_url = EXCLUDED.photo_url`,
+          `INSERT INTO users (firebase_id, email, display_name, photo_url, updated_at) VALUES ($1,$2,$3,$4, now())
+           ON CONFLICT (firebase_id) DO UPDATE SET email = EXCLUDED.email, display_name = EXCLUDED.display_name, photo_url = EXCLUDED.photo_url, updated_at = now()`,
           [uid, userRecord.email ?? null, userRecord.displayName ?? null, userRecord.photoURL ?? null]
         );
         console.log('[auth/firebase-login] neon upsert ok', { uid });
